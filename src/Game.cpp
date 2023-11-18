@@ -17,10 +17,7 @@ Game::Game()
 
 Game::~Game()
 {
-    for (auto texture : __pieceTextures)
-    {
-        SDL_DestroyTexture(texture.second);
-    }
+    SDL_DestroyTexture(__pieceTextures);
 }
 
 void Game::gameLoop()
@@ -57,7 +54,7 @@ void Game::gameLoop()
                 std::cout << "mouse released at (" << event.motion.x << "," << event.motion.y << ")\n";
                 break;
             case SDL_MOUSEMOTION:
-                std::cout << "mouse at (" << event.motion.x << "," << event.motion.y << ")\n";
+                //std::cout << "mouse at (" << event.motion.x << "," << event.motion.y << ")\n";
                 break;
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE)
@@ -86,6 +83,29 @@ void Game::gameLoop()
 
 void Game::drawBoard()
 {
+    const int spriteRectSize = 133;
+    const std::map<PieceEnum, SDL_Rect> pieceRectangles = {
+        // Black Pieces
+        {PieceEnum::BlackKing, {0, 133, spriteRectSize, spriteRectSize}},
+        {PieceEnum::BlackQueen, {133, 133, spriteRectSize, spriteRectSize}},
+        {PieceEnum::BlackBishop, {266, 133, spriteRectSize, spriteRectSize}},
+        {PieceEnum::BlackKnight, {399, 133, spriteRectSize, spriteRectSize}},
+        {PieceEnum::BlackRook, {532, 133, spriteRectSize, spriteRectSize}},
+        {PieceEnum::BlackPawn, {665, 133, spriteRectSize, spriteRectSize}},
+
+        // White Pieces
+        {PieceEnum::WhiteKing, {0, 0, spriteRectSize, spriteRectSize}},
+        {PieceEnum::WhiteQueen, {133, 0, spriteRectSize, spriteRectSize}},
+        {PieceEnum::WhiteBishop, {266, 0, spriteRectSize, spriteRectSize}},
+        {PieceEnum::WhiteKnight, {399, 0, spriteRectSize, spriteRectSize}},
+        {PieceEnum::WhiteRook, {532, 0, spriteRectSize, spriteRectSize}},
+        {PieceEnum::WhitePawn, {665, 0, spriteRectSize, spriteRectSize}},
+
+        // None
+        {PieceEnum::None, {0, 0, 0, 0}}
+
+    };
+
     int width = __window.getWidth();
     int height = __window.getHeight();
 
@@ -113,9 +133,9 @@ void Game::drawBoard()
 
             if (!__board.isEmpty(Vec2<int>(row, col)))
             {
-                const Piece& piece = __board[Vec2<int>(row, col)];
+                const Piece &piece = __board[Vec2<int>(row, col)];
                 SDL_Rect rect = {rectX, rectY, rectSide, rectSide};
-                SDL_RenderCopy(__window.getRenderer(), __pieceTextures[piece.type()], nullptr, &rect);
+                SDL_RenderCopy(__window.getRenderer(), __pieceTextures, &pieceRectangles.at(piece.type()), &rect);
             }
         }
     }
@@ -124,25 +144,21 @@ void Game::drawBoard()
 void Game::loadPieceTextures()
 {
     // load pieces
-    for (auto piece : globals::piece::base)
+
+    SDL_Surface *surface = SDL_LoadBMP(globals::piece::spritePath.c_str());
+    if (!surface)
     {
-        SDL_Surface *surface = SDL_LoadBMP(std::string(globals::piece::Path + piece.second + globals::piece::ext::bmp).c_str());
-        if (!surface)
-        {
-            printf("Unable to load bitmap: %s\n", SDL_GetError());
-            throw std::runtime_error("Failed to create surface for image " + globals::piece::Path + piece.second + globals::piece::ext::bmp);
-        }
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(__window.getRenderer(), surface);
-        if (!texture)
-        {
-            printf("Unable to load bitmap texture: %s\n", SDL_GetError());
-            SDL_FreeSurface(surface);
-            throw std::runtime_error("Failed to create texture for image " + piece.second);
-        }
-        __pieceTextures[piece.first] = texture;
-
-        SDL_FreeSurface(surface);
+        printf("Unable to load bitmap: %s\n", SDL_GetError());
+        throw std::runtime_error("Failed to create surface for image " + globals::piece::spritePath + "\n");
     }
-    __pieceTextures[PieceEnum::None] = nullptr;
-}
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(__window.getRenderer(), surface);
+    if (!texture)
+    {
+        printf("Unable to load bitmap texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        throw std::runtime_error("Failed to create texture.\n");
+    }
+    __pieceTextures = texture;
 
+    SDL_FreeSurface(surface);
+}

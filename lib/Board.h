@@ -11,7 +11,7 @@ public:
     ~Board();
 
     bool isEmpty(const Vec2<int> position) const;
-    const Piece &operator[](const Vec2<int> position) const;
+    const Piece operator[](const Vec2<int> position) const;
 
 private:
     Piece* __piecePlacement[globals::Board::ROWS][globals::Board::COLS];

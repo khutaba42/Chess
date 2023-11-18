@@ -13,7 +13,7 @@ public:
 
 private:
     Window __window;
-    std::map<PieceEnum, SDL_Texture *> __pieceTextures;
+    SDL_Texture *__pieceTextures;
     Board __board;
 
     void gameLoop();

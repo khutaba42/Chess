@@ -31,6 +31,7 @@ namespace globals
 {
     namespace piece
     {
+        const std::string spritePath = "img/piece/800px-Chess_Pieces_Sprite.svg.bmp";
         namespace ext
         {
             const std::string bmp = ".bmp";

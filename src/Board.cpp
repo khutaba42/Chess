@@ -30,10 +30,10 @@ bool Board::isEmpty(const Vec2<int> position) const
     {
         return (__piecePlacement[position.row][position.col] == nullptr);
     }
-    std::runtime_error("Invalid position in board.\n");
+    throw std::runtime_error("Invalid position in board in isEmpty().\n");
 }
 
-const Piece &Board::operator[](const Vec2<int> position) const
+const Piece Board::operator[](const Vec2<int> position) const
 {
     if (!(position.row < 0 || position.row >= globals::Board::ROWS || position.col < 0 || position.col >= globals::Board::COLS))
     {
@@ -41,8 +41,12 @@ const Piece &Board::operator[](const Vec2<int> position) const
         {
             return *__piecePlacement[position.row][position.col];
         }
+        else
+        {
+            return Piece();
+        }
     }
-    std::runtime_error("Invalid position in board.\n");
+    throw std::runtime_error("Invalid position in board in operator[].\n");
 }
 
 void Board::FEN_decoder(const std::string &FEN)

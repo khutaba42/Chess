@@ -1,0 +1,52 @@
+#!/bin/sh
+
+NAME=ChessGame
+COMPILER=g++
+COMPILER_VERSION=-std=c++11
+DEBUG=-g
+# ------------------------------------------------------------ #
+# ------------------------ Variables ------------------------- #
+# ------------------------------------------------------------ #
+WORKING_DIR= # the path of the project
+
+SRC=$WORKING_DIR/src
+LIB=$WORKING_DIR/lib
+BLD=$WORKING_DIR/build
+DBG=$BLD/Debug
+LOG=$BLD/Log
+
+EXEC=$DBG/$NAME
+ERROR=$LOG/err.out
+
+SRC_FILES=$SRC/*.cpp
+LIB_FILES=-I$LIB
+
+FRAMEWORK="
+    -I/opt/homebrew/include \
+    -L/opt/homebrew/lib \
+    -lSDL2 \
+    -framework OpenGL
+"
+
+FLAGS="
+    $DEBUG \
+    "
+# ------------------------------------------------------------ #
+
+if [ $# -eq 1 ]; then
+    # Check if the argument equals a specific string
+    if [ "$1" = "clean" ]; then
+        # remove executable
+        rm $EXEC
+    elif [ "$1" = "debug" ]; then
+        # create executable
+        $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR
+    fi
+else 
+    # create executable
+    $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR        
+    # run executable
+    $EXEC
+    # remove executable
+    rm $EXEC
+fi

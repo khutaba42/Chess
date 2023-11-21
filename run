@@ -19,7 +19,7 @@ EXEC=$DBG/$NAME
 ERROR=$LOG/err.out
 
 SRC_FILES=$SRC/*.cpp
-LIB_FILES=-I$LIB
+LIB_FILES="-I$LIB -I$LIB/Graphics -I$LIB/Pieces -I/opt/homebrew/Cellar/freetype/2.13.2/include/freetype2"
 
 FRAMEWORK="
     -I/opt/homebrew/include \
@@ -29,8 +29,9 @@ FRAMEWORK="
 "
 
 FLAGS="
-    $DEBUG \
+    $DEBUG
     "
+
 # ------------------------------------------------------------ #
 
 if [ $# -eq 1 ]; then
@@ -40,13 +41,20 @@ if [ $# -eq 1 ]; then
         rm $EXEC
     elif [ "$1" = "debug" ]; then
         # create executable
+        echo "Compilation Process Started.."
         $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR
+        echo "Compilation Process Finished.."
     fi
 else 
     # create executable
-    $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR        
+    echo "Compilation Process Started.."
+    $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR
+    echo "Compilation Process Finished.."
     # run executable
+    echo "Running Executable.."
     $EXEC
+    echo "Exiting Executable.."
     # remove executable
     rm $EXEC
+    echo "All done."
 fi

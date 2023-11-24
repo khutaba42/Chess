@@ -1,55 +1,59 @@
 #include "Board.h"
 
 Board::Board(const std::string &FEN)
+    : __data(FEN_decoder(FEN)),
+      __rows(globals::board::ROWS),
+      __cols(globals::board::COLS)
 {
-    for (int row = 0; row < globals::Board::ROWS; row++)
-    {
-        for (int col = 0; col < globals::Board::COLS; col++)
-        {
-            __piecePlacement[row][col] = nullptr;
-        }
-    }
-
-    FEN_decoder(FEN);
 }
 
 Board::~Board()
 {
-    for (int row = 0; row < globals::Board::ROWS; row++)
-    {
-        for (int col = 0; col < globals::Board::COLS; col++)
+    iterateRowCol(
+        [this](int row, int col)
         {
-            delete __piecePlacement[row][col];
-        }
-    }
+            delete this->__data.PiecePlacement[row][col];
+        });
 }
 
-bool Board::isEmpty(const Vec2<int> position) const
+int Board::getRows() const { return __rows; }
+int Board::getCols() const { return __cols; }
+
+bool Board::inBoard(const Vec2<int> position) const
 {
-    if (!(position.row < 0 || position.row >= globals::Board::ROWS || position.col < 0 || position.col >= globals::Board::COLS))
-    {
-        return (__piecePlacement[position.row][position.col] == nullptr);
-    }
-    throw std::runtime_error("Invalid position in board in isEmpty().\n");
+    return !(position.row < 0 || position.row >= __rows || position.col < 0 || position.col >= __cols);
+}
+
+bool Board::squareOccupied(const Vec2<int> position) const
+{
+    return inBoard(position) && (__data.PiecePlacement[position.row][position.col] != nullptr);
 }
 
 const Piece Board::operator[](const Vec2<int> position) const
 {
-    if (!(position.row < 0 || position.row >= globals::Board::ROWS || position.col < 0 || position.col >= globals::Board::COLS))
+    if (squareOccupied(position))
     {
-        if (__piecePlacement[position.row][position.col] != nullptr)
-        {
-            return *__piecePlacement[position.row][position.col];
-        }
-        else
-        {
-            return Piece();
-        }
+        return *__data.PiecePlacement[position.row][position.col];
     }
-    throw std::runtime_error("Invalid position in board in operator[].\n");
+    else
+    {
+        return Piece();
+    }
 }
 
-void Board::FEN_decoder(const std::string &FEN)
+const Piece &Board::at(const Vec2<int> position) const
+{
+    if (squareOccupied(position))
+    {
+        return *__data.PiecePlacement[position.row][position.col];
+    }
+    else
+    {
+        return __data.EmptyPiece;
+    }
+}
+
+Board::FEN_data Board::FEN_decoder(const std::string &FEN)
 {
     /**
      * 0 - Piece placement
@@ -59,13 +63,25 @@ void Board::FEN_decoder(const std::string &FEN)
      * 4 - Halfmove clock
      * 5 - Fullmove number
      */
+    Board::FEN_data data;
+
+    int Rows = globals::board::ROWS, Cols = globals::board::COLS;
+    for (int row = 0; row < Rows; row++)
+    {
+        for (int col = 0; col < Cols; col++)
+        {
+            data.PiecePlacement[row][col] = nullptr;
+        }
+    }
+
     int part = 0;
     int partCounter = 0;
     Vec2<int> part1 = {0, 0};
 
-    std::string HalfmoveClock_str;
-    std::string FullmoveNumber_str;
+    std::string halfMoveClock_str;
+    std::string fullMoveNumber_str;
 
+    data.EmptyPiece = Piece();
     for (const char letter : FEN)
     {
         if (letter == ' ')
@@ -98,41 +114,41 @@ void Board::FEN_decoder(const std::string &FEN)
                 {
                 // handle white
                 case 'P':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhitePawn);
+                    data.PiecePlacement[part1.row][part1.col] = new Pawn(PieceColor::White);
                     break;
                 case 'N':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhiteKnight);
+                    data.PiecePlacement[part1.row][part1.col] = new Knight(PieceColor::White);
                     break;
                 case 'B':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhiteBishop);
+                    data.PiecePlacement[part1.row][part1.col] = new Bishop(PieceColor::White);
                     break;
                 case 'R':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhiteRook);
+                    data.PiecePlacement[part1.row][part1.col] = new Rook(PieceColor::White);
                     break;
                 case 'Q':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhiteQueen);
+                    data.PiecePlacement[part1.row][part1.col] = new Queen(PieceColor::White);
                     break;
                 case 'K':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::WhiteKing);
+                    data.PiecePlacement[part1.row][part1.col] = new King(PieceColor::White);
                     break;
                 // handle black
                 case 'p':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackPawn);
+                    data.PiecePlacement[part1.row][part1.col] = new Pawn(PieceColor::Black);
                     break;
                 case 'n':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackKnight);
+                    data.PiecePlacement[part1.row][part1.col] = new Knight(PieceColor::Black);
                     break;
                 case 'b':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackBishop);
+                    data.PiecePlacement[part1.row][part1.col] = new Bishop(PieceColor::Black);
                     break;
                 case 'r':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackRook);
+                    data.PiecePlacement[part1.row][part1.col] = new Rook(PieceColor::Black);
                     break;
                 case 'q':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackQueen);
+                    data.PiecePlacement[part1.row][part1.col] = new Queen(PieceColor::Black);
                     break;
                 case 'k':
-                    __piecePlacement[part1.row][part1.col] = new Piece(PieceEnum::BlackKing);
+                    data.PiecePlacement[part1.row][part1.col] = new King(PieceColor::Black);
                     break;
 
                 default:
@@ -146,11 +162,11 @@ void Board::FEN_decoder(const std::string &FEN)
         case 1:
             if (letter == 'w')
             {
-                __activeColor = PieceColor::White;
+                data.ActiveColor = PieceColor::White;
             }
             else if (letter == 'b')
             {
-                __activeColor = PieceColor::Black;
+                data.ActiveColor = PieceColor::Black;
             }
             else
             {
@@ -158,16 +174,16 @@ void Board::FEN_decoder(const std::string &FEN)
             }
             break;
         case 2:
-            __castling.push_back(letter);
+            data.Castling.push_back(letter);
             break;
         case 3:
-            __EnPassantTarget.push_back(letter);
+            data.EnPassantTarget.push_back(letter);
             break;
         case 4:
-            HalfmoveClock_str.push_back(letter);
+            halfMoveClock_str.push_back(letter);
             break;
         case 5:
-            FullmoveNumber_str.push_back(letter);
+            fullMoveNumber_str.push_back(letter);
             break;
 
         default:
@@ -177,11 +193,13 @@ void Board::FEN_decoder(const std::string &FEN)
 
     try
     {
-        __HalfmoveClock = std::stoi(HalfmoveClock_str);
-        __FullmoveNumber = std::stoi(FullmoveNumber_str);
+        data.HalfMoveClock = std::stoi(halfMoveClock_str);
+        data.FullMoveNumber = std::stoi(fullMoveNumber_str);
     }
     catch (const std::exception &e)
     {
-        throw std::runtime_error("Unknown format of FEN in part 4/5:\n\tHalf move clock = " + HalfmoveClock_str + "\n\tFull move number = " + FullmoveNumber_str + "\n");
+        throw std::runtime_error("Unknown format of FEN in part 4/5:\n\tHalf move clock = " + halfMoveClock_str + "\n\tFull move number = " + fullMoveNumber_str + "\n");
     }
+
+    return data;
 }

@@ -1,13 +1,13 @@
 #pragma once
 
 // The opacity (alpha) parameter is a number between 0.0 (fully transparent) and 1.0 (fully opaque).
-class Color
+class RGBA_Color
 {
 public:
-    Color(int red, int green, int blue, int opacity = 255);
-    Color(float redf, float greenf, float bluef, float opacity = 1.0f);
-    Color(const Color&) = default;
-    ~Color() = default;
+    RGBA_Color(int red, int green, int blue, int opacity = 255);
+    RGBA_Color(float redf, float greenf, float bluef, float opacity = 1.0f);
+    RGBA_Color(const RGBA_Color&) = default;
+    ~RGBA_Color() = default;
     float opacity() const, opacityf() const;
     int red() const, green() const, blue() const;
     float redf() const, greenf() const, bluef() const;

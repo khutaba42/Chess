@@ -1,27 +1,101 @@
 #include "Piece.h"
 
-Piece::Piece()
-    : __type(PieceEnum::None),
-      __color(PieceColor::None)
+Piece::Piece(PieceEnum Type, PieceColor Color)
+    : __type(Type),
+      __color(Color)
 {
 }
 
-Piece::Piece(PieceEnum Type)
-: __type(Type)
+Piece::~Piece()
 {
-    // TODO: make this in a better more generic way
-    if (static_cast<int>(Type) >= 0 && static_cast<int>(Type) <= 5)
-    {
-        __color = PieceColor::Black;
-    } else if (static_cast<int>(Type) >= 6 && static_cast<int>(Type) <= 11)
-    {
-        __color = PieceColor::White;
-    }
-    else {
-        __color = PieceColor::None;
-    }
 }
 
-Piece::Piece(char PieceType)
+PieceEnum Piece::type() const { return __type; }
+
+PieceColor Piece::color() const { return __color; }
+
+//-----------------//-----------------//-----------------//-----------------//
+
+Pawn::Pawn(PieceColor Color) : Piece(PieceEnum::Pawn, Color)
 {
 }
+
+Pawn::~Pawn()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+King::King(PieceColor Color) : Piece(PieceEnum::King, Color)
+{
+}
+
+King::~King()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+Queen::Queen(PieceColor Color) : Piece(PieceEnum::Queen, Color)
+{
+}
+
+Queen::~Queen()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+Bishop::Bishop(PieceColor Color) : Piece(PieceEnum::Bishop, Color)
+{
+}
+
+Bishop::~Bishop()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+Knight::Knight(PieceColor Color) : Piece(PieceEnum::Knight, Color)
+{
+}
+
+Knight::~Knight()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+Rook::Rook(PieceColor Color) : Piece(PieceEnum::Rook, Color)
+{
+}
+
+Rook::~Rook()
+{
+}
+
+//-----------------//-----------------//-----------------//-----------------//
+
+KRook::KRook(PieceColor Color) : Rook(Color), __hasMoved(false)
+{
+}
+
+KRook::~KRook()
+{
+}
+
+bool KRook::hasMoved() const { return __hasMoved; }
+
+//-----------------//-----------------//-----------------//-----------------//
+
+QRook::QRook(PieceColor Color) : Rook(Color), __hasMoved(false)
+{
+}
+
+QRook::~QRook()
+{
+}
+
+bool QRook::hasMoved() const { return __hasMoved; }
+
+//-----------------//-----------------//-----------------//-----------------//

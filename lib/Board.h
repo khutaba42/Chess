@@ -1,30 +1,74 @@
 #pragma once
 
-#include "includes.h"
+#include <string>
+#include <vector>
 #include "globals.h"
 #include "Piece.h"
 
 class Board
 {
 public:
-    Board(const std::string &FEN = globals::Board::FEN_default);
+    Board(const std::string &FEN = globals::board::FEN_default);
     ~Board();
 
-    bool isEmpty(const Vec2<int> position) const;
+    int getRows() const;
+    int getCols() const;
+
+    bool inBoard(const Vec2<int> position) const;
+    bool squareOccupied(const Vec2<int> position) const;
     const Piece operator[](const Vec2<int> position) const;
+    const Piece &at(const Vec2<int> position) const;
+
+    template <typename FunctionObj>
+    void iterateRowCol(FunctionObj Function) const;
+    template <typename FunctionObj>
+    void iterateColRow(FunctionObj Function) const;
 
 private:
-    Piece* __piecePlacement[globals::Board::ROWS][globals::Board::COLS];
-    //std::vector<std::vector<std::pair<Piece&, Vec2<int> > > > __piecePlacement;
-    PieceColor __activeColor;
-    std::string __castling;
-    //? This is a square over which a pawn has just passed while moving two squares; it is given in algebraic notation. for example if e2 white pawn moved two squares to e4 then this variable will hold e3.
-    std::string __EnPassantTarget;
-    //? The number of halfmoves since the last capture or pawn advance, used for the fifty-move rule.
-    int __HalfmoveClock;
-    //? It starts at 1 and is incremented after Black's move.
-    int __FullmoveNumber;
+    struct FEN_data
+    {
+        Piece EmptyPiece;
+        Piece *PiecePlacement[globals::board::ROWS][globals::board::COLS];
+        PieceColor ActiveColor;
+        std::string Castling;
+        //? This is a square over which a pawn has just passed while moving two squares; it is given in algebraic notation. for example if e2 white pawn moved two squares to e4 then this variable will hold e3.
+        std::string EnPassantTarget;
+        //? The number of half-moves since the last capture or pawn advance, used for the fifty-move rule.
+        int HalfMoveClock;
+        //? It starts at 1 and is incremented after Black's move.
+        int FullMoveNumber;
+    };
+    FEN_data __data;
+    const int __rows, __cols;
 
     //? Forsyth-Edwards Notation Encoder
-    void FEN_decoder(const std::string &FEN);
+    FEN_data FEN_decoder(const std::string &FEN);
 };
+
+// templated functions' implementations here
+
+template <typename FunctionObj>
+void Board::iterateRowCol(FunctionObj Function) const
+{
+    int Rows = __rows, Cols = __cols;
+    for (int row = 0; row < Rows; row++)
+    {
+        for (int col = 0; col < Cols; col++)
+        {
+            Function(row, col);
+        }
+    }
+}
+
+template <typename FunctionObj>
+void Board::iterateColRow(FunctionObj Function) const
+{
+    int Rows = __rows, Cols = __cols;
+    for (int row = 0; row < Cols; row++)
+    {
+        for (int col = 0; col < Rows; col++)
+        {
+            Function(row, col);
+        }
+    }
+}

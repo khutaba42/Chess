@@ -16,4 +16,5 @@ struct Vec2
 
     Vec2(T x, T y) : x(x), y(y) {}
     friend bool operator==(const Vec2 a, const Vec2 b) { return (a.x == b.x) && (a.y == b.y); }
+    friend bool operator!=(const Vec2 a, const Vec2 b) { return !(a == b); }
 };

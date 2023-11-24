@@ -16,10 +16,16 @@ DBG=$BLD/Debug
 LOG=$BLD/Log
 
 EXEC=$DBG/$NAME
-ERROR=$LOG/err.out
+ERROR=$LOG/err.txt
 
-SRC_FILES=$SRC/*.cpp
-LIB_FILES="-I$LIB -I$LIB/Graphics -I$LIB/Pieces -I/opt/homebrew/Cellar/freetype/2.13.2/include/freetype2"
+SRC_FILES="
+    $SRC/*.cpp
+    $SRC/Graphics/*.cpp
+"
+LIB_FILES="
+    -I$LIB \
+    -I$LIB/Graphics
+"
 
 FRAMEWORK="
     -I/opt/homebrew/include \
@@ -29,7 +35,7 @@ FRAMEWORK="
 "
 
 FLAGS="
-    $DEBUG
+    $DEBUG 
     "
 
 # ------------------------------------------------------------ #

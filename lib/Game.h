@@ -1,9 +1,6 @@
 #pragma once
 
-#include "includes.h"
-#include "Window.h"
-#include "Piece.h"
-#include "Board.h"
+#include "Graphics.h"
 
 class Game
 {
@@ -12,14 +9,7 @@ public:
     ~Game();
 
 private:
-    Window __window;
-    SDL_Texture *__pieceTextures;
-    Board __board;
+    Graphics __graphics;
 
     void gameLoop();
-
-    void drawBoard();
-
-    void loadPieceTextures();
-
 };

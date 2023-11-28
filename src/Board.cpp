@@ -13,11 +13,14 @@ Board::~Board()
         [this](int row, int col)
         {
             delete this->__data.PiecePlacement[row][col];
-        });
+        }
+
+    );
 }
 
 int Board::getRows() const { return __rows; }
 int Board::getCols() const { return __cols; }
+PieceColor Board::getActiveColor() const { return __data.ActiveColor; }
 
 bool Board::inBoard(const Vec2<int> position) const
 {
@@ -53,6 +56,95 @@ const Piece &Board::at(const Vec2<int> position) const
     }
 }
 
+void Board::swapPieces(const Vec2<int> a, const Vec2<int> b)
+{
+    if (inBoard(a) && inBoard(b))
+    {
+        std::swap(__data.PiecePlacement[a.row][a.col], __data.PiecePlacement[b.row][b.col]);
+    }
+    return;
+}
+
+Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int> To)
+{
+    //? Variables for the Do Nothing statements
+    bool FromInBoard = this->inBoard(From);
+    bool ToInBoard = this->inBoard(To);
+
+    bool FromSquareOccupied = this->squareOccupied(From);
+    //? Variables for the Mixed statements
+
+    //? Variables for the Do Something statements
+
+    /*---------------------------------------------------------------*/
+
+    /**
+     *    * Do Nothing statements,
+     *  returns the reason the board remains unchanged
+     */
+    // check if they are in-board positions
+    if (!FromInBoard || !ToInBoard)
+    {
+        if (FromInBoard && !ToInBoard)
+        {
+            return ToPositionNotInBoard;
+        }
+        else if (!FromInBoard && ToInBoard)
+        {
+            return FromPositionNotInBoard;
+        }
+        else // if(!FromInBoard && !ToInBoard)
+        {
+            return FromAndToPositionNotInBoard;
+        }
+    }
+    // check if From has a piece in it (to move)
+    else if (!FromSquareOccupied)
+    {
+        return FromSquareNotOccupied;
+    }
+    // check if the piece we are moving (from) is of the active color
+    else if (this->at(From).color() != __data.ActiveColor)
+    {
+        return FromHasNonActiveColorPiece;
+    }
+
+    // check if the move in En passant
+    // else if ()
+    // {
+    //     return ;
+    // }
+    /**
+     *    * Mixed statements,
+     *  returns the reason the board changed after the change has been done
+     *  or
+     *  the reason the board remained unchanged.
+     */
+
+    // check if the piece we are moving to is NOT of the active color
+    else if (this->at(To).color() == __data.ActiveColor)
+    {
+        return ToHasActiveColorPiece;
+    }
+    /**
+     *    * Do Something statements,
+     *  returns the reason the board changed after the change has been done.
+     */
+    return UnknownStatus;
+}
+
+bool Board::isKingInCheck(const Board &board, PieceColor KingColor)
+{
+    if (KingColor == PieceColor::None)
+    {
+        return false;
+    }
+    PieceColor activeColor = board.getActiveColor();
+
+    // Look for the king square
+    
+}
+
 Board::FEN_data Board::FEN_decoder(const std::string &FEN)
 {
     /**
@@ -60,8 +152,8 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
      * 1 - Active color
      * 2 - Castling availability
      * 3 - En passant target square
-     * 4 - Halfmove clock
-     * 5 - Fullmove number
+     * 4 - Half Move clock
+     * 5 - Full Move number
      */
     Board::FEN_data data;
 
@@ -81,7 +173,6 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
     std::string halfMoveClock_str;
     std::string fullMoveNumber_str;
 
-    data.EmptyPiece = Piece();
     for (const char letter : FEN)
     {
         if (letter == ' ')

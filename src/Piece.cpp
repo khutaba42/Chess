@@ -14,9 +14,13 @@ PieceEnum Piece::type() const { return __type; }
 
 PieceColor Piece::color() const { return __color; }
 
+bool Piece::is(const Piece &other) const { return this == &other; }
+bool operator==(const Piece &a, const Piece &b) { return (a.__type == b.__type) && (a.__color == b.__color); }
+bool operator!=(const Piece &a, const Piece &b) { return !(a == b); }
+
 //-----------------//-----------------//-----------------//-----------------//
 
-Pawn::Pawn(PieceColor Color) : Piece(PieceEnum::Pawn, Color)
+Pawn::Pawn(PieceColor Color) : Piece(PieceEnum::Pawn, Color), __hasMoved(false)
 {
 }
 

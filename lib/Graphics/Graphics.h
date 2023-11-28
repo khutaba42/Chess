@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <string>
+#include <memory>
 
 #include "Window.h"
 #include "Board.h"
@@ -26,6 +27,15 @@ private:
         Rectangle BoardBorders;
         std::vector<Rectangle> Squares;
         std::pair<bool, Vec2<int>> IlluminatedSquare;
+        struct ClickedPiece
+        {
+            bool Clicked;
+            Vec2<int> Position;
+            Rectangle CurrentRectanglePosition;
+
+            ClickedPiece(bool Clicked = false, Vec2<int> position = {-1, -1}, Rectangle CurrentRectanglePosition = {0, 0, 0, 0}) : Clicked(Clicked), Position(position), CurrentRectanglePosition(CurrentRectanglePosition) {}
+        };
+        std::unique_ptr<ClickedPiece> ClickedPieceInfo;
 
         Rect_data(const Graphics &graphics, const Board &board);
     };
@@ -34,16 +44,25 @@ private:
 
     //-----------------//-----------------//-----------------//-----------------//
     // Helper Functions
-    int getWindowWidth() const;
-    int getWindowHeight() const;
-    SDL_Renderer *getRenderer();
-    void updateWindow(int Width, int Height);
+    int __getWindowWidth() const;
+    int __getWindowHeight() const;
+    SDL_Renderer *__getRenderer();
+    void __updateWindow(int Width, int Height);
 
-    void updateRectData();
-    void drawBoard();
+    void __updateRectData();
+    void __drawBoard();
 
-    void handleMousePosition(int x, int y);
+    Vec2<int> __getSquare(int x, int y);
+    Vec2<int> __getSquare(Vec2<int> Coordinate);
 
-    SDL_Texture *loadPieceTexture(const std::string &Path);
-    void destroyTexture(SDL_Texture *&Texture);
+    void __clickOnPiece(int x, int y);
+    void __releasePiece(int x, int y);
+    void __updateClickedPieceRectanglePosition(int x, int y);
+
+    void __handleMousePosition(int x, int y);
+    void __handleMouseDownEvent(int x, int y);
+    void __handleMouseUpEvent(int x, int y);
+
+    SDL_Texture *__loadPieceTexture(const std::string &Path);
+    void __destroyTexture(SDL_Texture *&Texture);
 };

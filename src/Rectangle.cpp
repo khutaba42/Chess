@@ -26,6 +26,17 @@ Rectangle::~Rectangle()
 {
 }
 
+Rectangle Rectangle::createRectangleFromMiddle(int MiddleX, int MiddleY, int Width, int Height)
+{
+    return Rectangle(
+        MiddleX - (Width / 2),
+        MiddleY - (Height / 2),
+        Width,
+        Height
+
+    );
+}
+
 Rectangle::operator SDL_Rect() const
 {
     return {x, y, w, h};

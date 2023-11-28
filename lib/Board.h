@@ -13,16 +13,43 @@ public:
 
     int getRows() const;
     int getCols() const;
+    PieceColor getActiveColor() const;
 
     bool inBoard(const Vec2<int> position) const;
     bool squareOccupied(const Vec2<int> position) const;
     const Piece operator[](const Vec2<int> position) const;
     const Piece &at(const Vec2<int> position) const;
 
+    void swapPieces(const Vec2<int> a, const Vec2<int> b);
+
+    enum PieceMovementStatus
+    {
+        FromPositionNotInBoard,
+        ToPositionNotInBoard,
+        FromAndToPositionNotInBoard,
+
+        FromSquareNotOccupied,
+
+        FromHasNonActiveColorPiece,
+
+        ToHasActiveColorPiece,
+
+        MovedToAnEmptySquare,
+        CapturedPiece,
+        IllegalMoveKingIsInCheck,
+        IllegalMoveCantMoveThere,
+
+        UnknownStatus
+    };
+    PieceMovementStatus movePiece(const Vec2<int> From, const Vec2<int> To);
+    bool isKingInCheck(const Board &board, PieceColor KingColor);
+
     template <typename FunctionObj>
     void iterateRowCol(FunctionObj Function) const;
     template <typename FunctionObj>
     void iterateColRow(FunctionObj Function) const;
+    template <typename FunctionObj>
+    void iteratePieces(FunctionObj Function) const;
 
 private:
     struct FEN_data
@@ -69,6 +96,22 @@ void Board::iterateColRow(FunctionObj Function) const
         for (int col = 0; col < Rows; col++)
         {
             Function(row, col);
+        }
+    }
+}
+
+template <typename FunctionObj>
+void Board::iteratePieces(FunctionObj Function) const
+{
+    int Rows = __rows, Cols = __cols;
+    for (int row = 0; row < Cols; row++)
+    {
+        for (int col = 0; col < Rows; col++)
+        {
+            if (__data.PiecePlacement[row][col])
+            {
+                Function(row, col);
+            }
         }
     }
 }

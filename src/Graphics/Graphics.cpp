@@ -26,13 +26,13 @@ Graphics::Graphics()
     : __window(globals::window::NAME + " " + pickRandomChessPieceSymbol()),
       __board(globals::board::FEN_default),
       __rectangles(*this, __board),
-      __piecesTexture(loadPieceTexture(globals::piece::spritePath))
+      __piecesTexture(__loadPieceTexture(globals::piece::spritePath))
 {
 }
 
 Graphics::~Graphics()
 {
-    destroyTexture(__piecesTexture);
+    __destroyTexture(__piecesTexture);
 }
 
 GameStatus Graphics::handleEvents()
@@ -54,17 +54,17 @@ GameStatus Graphics::handleEvents()
             {
                 int newWidth = event.window.data1;
                 int newHeight = event.window.data2;
-                this->updateWindow(newWidth, newHeight);
+                __updateWindow(newWidth, newHeight);
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            std::cout << "mouse clicked at (" << event.motion.x << "," << event.motion.y << ")\n";
+            __handleMouseDownEvent(event.motion.x, event.motion.y);
             break;
         case SDL_MOUSEBUTTONUP:
-            std::cout << "mouse released at (" << event.motion.x << "," << event.motion.y << ")\n";
+            __handleMouseUpEvent(event.motion.x, event.motion.y);
             break;
         case SDL_MOUSEMOTION:
-            handleMousePosition(event.motion.x, event.motion.y);
+            __handleMousePosition(event.motion.x, event.motion.y);
             //  std::cout << "mouse at (" << event.motion.x << "," << event.motion.y << ")\n";
             break;
         case SDL_KEYDOWN:
@@ -78,7 +78,7 @@ GameStatus Graphics::handleEvents()
         // Rendering
 
         SDL_SetRenderDrawColor(
-            this->getRenderer(),
+            __getRenderer(),
             globals::color::black.red(),
             globals::color::black.green(),
             globals::color::black.blue(),
@@ -86,18 +86,18 @@ GameStatus Graphics::handleEvents()
 
         );
 
-        SDL_RenderClear(this->getRenderer());
+        SDL_RenderClear(__getRenderer());
 
-        this->drawBoard();
+        __drawBoard();
 
-        SDL_RenderPresent(this->getRenderer());
+        SDL_RenderPresent(__getRenderer());
     }
     return KeepRunning;
 }
 
-int Graphics::getWindowWidth() const { return __window.getWidth(); }
-int Graphics::getWindowHeight() const { return __window.getHeight(); }
-SDL_Renderer *Graphics::getRenderer() { return __window.getRenderer(); }
+int Graphics::__getWindowWidth() const { return __window.getWidth(); }
+int Graphics::__getWindowHeight() const { return __window.getHeight(); }
+SDL_Renderer *Graphics::__getRenderer() { return __window.getRenderer(); }
 
 #include <utility> // for std::pair
 #include <map>
@@ -144,7 +144,7 @@ std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectanglesVER2 = {
 };
 std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectangles = pieceRectanglesVER2;
 
-void Graphics::drawBoard()
+void Graphics::__drawBoard()
 {
     int Rows = __board.getRows();
     int Cols = __board.getCols();
@@ -190,22 +190,53 @@ void Graphics::drawBoard()
 
             if (__board.inBoard(square_coor) && (__board.squareOccupied(square_coor)))
             {
-                const Piece &piece = __board[square_coor];
-                Rectangle dest = {rect.x, rect.y, rect.w, rect.h};
-                __window.drawTexture(__piecesTexture, &pieceRectangles.at({piece.type(), piece.color()}), &dest);
+                if (!__rectangles.ClickedPieceInfo->Clicked || !(__rectangles.ClickedPieceInfo->Position == square_coor))
+                {
+                    const Piece &piece = __board[square_coor];
+                    Rectangle dest = {rect.x, rect.y, rect.w, rect.h};
+                    __window.drawTexture(__piecesTexture, &pieceRectangles.at({piece.type(), piece.color()}), &dest);
+                }
             }
         }
+    }
+    if (__rectangles.ClickedPieceInfo->Clicked)
+    {
+        const Piece &piece = __board.at(__rectangles.ClickedPieceInfo->Position);
+        Rectangle dest = __rectangles.ClickedPieceInfo->CurrentRectanglePosition;
+        __window.drawTexture(__piecesTexture, &pieceRectangles.at({piece.type(), piece.color()}), &dest);
     }
     return;
 }
 
-#include <iostream>
-void Graphics::handleMousePosition(int x, int y)
+Vec2<int> Graphics::__getSquare(int x, int y)
+{
+    const Rectangle &board_borders = __rectangles.BoardBorders;
+    if (board_borders.inRectangle(x, y))
+    {
+        const int side_length = __rectangles.SquareSideLength;
+        const int square_col = (x - board_borders.x) / side_length;
+        const int square_row = (y - board_borders.y) / side_length;
+        return {square_row, square_col};
+    }
+    return {-1, -1};
+}
+
+Vec2<int> Graphics::__getSquare(Vec2<int> Coordinate)
+{
+    return __getSquare(Coordinate.x, Coordinate.y);
+}
+
+void Graphics::__handleMousePosition(int x, int y)
 {
     const Rectangle &board_borders = __rectangles.BoardBorders;
     const int side_length = __rectangles.SquareSideLength;
     const int square_col = (x - board_borders.x) / side_length;
     const int square_row = (y - board_borders.y) / side_length;
+
+    if (__rectangles.BoardFrame.inRectangle(x, y))
+    {
+        __updateClickedPieceRectanglePosition(x, y);
+    }
 
     if (board_borders.inRectangle(x, y))
     {
@@ -223,7 +254,17 @@ void Graphics::handleMousePosition(int x, int y)
     return;
 }
 
-SDL_Texture *Graphics::loadPieceTexture(const std::string &Path)
+void Graphics::__handleMouseDownEvent(int x, int y)
+{
+    __clickOnPiece(x, y);
+}
+
+void Graphics::__handleMouseUpEvent(int x, int y)
+{
+    __releasePiece(x, y);
+}
+
+SDL_Texture *Graphics::__loadPieceTexture(const std::string &Path)
 {
     // load pieces
     SDL_Surface *surface = nullptr;
@@ -233,7 +274,7 @@ SDL_Texture *Graphics::loadPieceTexture(const std::string &Path)
         printf("Unable to load bitmap: %s\n", SDL_GetError());
         throw std::runtime_error("Failed to create surface for image " + Path + "\n");
     }
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(this->getRenderer(), surface);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(__getRenderer(), surface);
     if (!texture)
     {
         printf("Unable to load bitmap texture: %s\n", SDL_GetError());
@@ -245,7 +286,7 @@ SDL_Texture *Graphics::loadPieceTexture(const std::string &Path)
     return texture;
 }
 
-void Graphics::destroyTexture(SDL_Texture *&Texture)
+void Graphics::__destroyTexture(SDL_Texture *&Texture)
 {
     SDL_DestroyTexture(Texture);
     Texture = nullptr;
@@ -254,10 +295,10 @@ void Graphics::destroyTexture(SDL_Texture *&Texture)
 Graphics::Rect_data::Rect_data(const Graphics &graphics, const Board &board)
     : BoardFrame({
 
-          (graphics.getWindowWidth() > graphics.getWindowHeight()) ? ((graphics.getWindowWidth() - graphics.getWindowHeight()) / 2) : (0),
-          (graphics.getWindowWidth() < graphics.getWindowHeight()) ? ((graphics.getWindowHeight() - graphics.getWindowWidth()) / 2) : (0),
-          std::min(graphics.getWindowWidth(), graphics.getWindowHeight()),
-          std::min(graphics.getWindowWidth(), graphics.getWindowHeight())
+          (graphics.__getWindowWidth() > graphics.__getWindowHeight()) ? ((graphics.__getWindowWidth() - graphics.__getWindowHeight()) / 2) : (0),
+          (graphics.__getWindowWidth() < graphics.__getWindowHeight()) ? ((graphics.__getWindowHeight() - graphics.__getWindowWidth()) / 2) : (0),
+          std::min(graphics.__getWindowWidth(), graphics.__getWindowHeight()),
+          std::min(graphics.__getWindowWidth(), graphics.__getWindowHeight())
 
       }),
       SquareSideLength(BoardFrame.w / (board.getCols() + 1)),
@@ -279,8 +320,8 @@ Graphics::Rect_data::Rect_data(const Graphics &graphics, const Board &board)
 
         [rectSideLength, Cols, this](int row, int col)
         {
-            Squares.push_back({this->BoardBorders.x + rectSideLength * col,
-                               this->BoardBorders.y + rectSideLength * row,
+            Squares.push_back({BoardBorders.x + rectSideLength * col,
+                               BoardBorders.y + rectSideLength * row,
                                rectSideLength,
                                rectSideLength
 
@@ -288,15 +329,63 @@ Graphics::Rect_data::Rect_data(const Graphics &graphics, const Board &board)
         }
 
     );
+    ClickedPieceInfo.reset(new ClickedPiece());
 }
 
-void Graphics::updateWindow(int Width, int Height)
+void Graphics::__updateWindow(int Width, int Height)
 {
     __window.updateWindow(Width, Height);
-    this->updateRectData();
+    __updateRectData();
 }
 
-void Graphics::updateRectData()
+void Graphics::__updateRectData()
 {
-    __rectangles = Rect_data(*this, this->__board);
+    __rectangles = Rect_data(*this, __board);
+}
+
+void Graphics::__clickOnPiece(int x, int y)
+{
+    const Rectangle &board_borders = __rectangles.BoardBorders;
+    const int side_length = __rectangles.SquareSideLength;
+    const int square_col = (x - board_borders.x) / side_length;
+    const int square_row = (y - board_borders.y) / side_length;
+    Vec2<int> square_coor = {square_row, square_col};
+
+    if (!__rectangles.ClickedPieceInfo->Clicked)
+    {
+        __rectangles.ClickedPieceInfo->Clicked = true;
+        __rectangles.ClickedPieceInfo->Position = square_coor;
+        __rectangles.ClickedPieceInfo->CurrentRectanglePosition = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
+    }
+}
+
+void Graphics::__releasePiece(int x, int y)
+{
+
+    if (__rectangles.ClickedPieceInfo->Clicked)
+    {
+        __rectangles.ClickedPieceInfo->Clicked = false;
+
+        const Rectangle &board_borders = __rectangles.BoardBorders;
+        if (board_borders.inRectangle(x, y))
+        {
+            const int side_length = __rectangles.SquareSideLength;
+            const int square_col = (x - board_borders.x) / side_length;
+            const int square_row = (y - board_borders.y) / side_length;
+            Vec2<int> square_coor = {square_row, square_col};
+            if (__board.inBoard(square_coor))
+            {
+                __board.swapPieces(__rectangles.ClickedPieceInfo->Position, square_coor);
+            }
+        }
+    }
+}
+
+void Graphics::__updateClickedPieceRectanglePosition(int x, int y)
+{
+    if (__rectangles.ClickedPieceInfo->Clicked)
+    {
+        const int side_length = __rectangles.SquareSideLength;
+        __rectangles.ClickedPieceInfo->CurrentRectanglePosition = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
+    }
 }

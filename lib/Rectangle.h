@@ -22,6 +22,9 @@ public:
     const Rectangle &operator=(const Rectangle &src);
     ~Rectangle();
 
+    // if width or height is odd the taller side (by 1 pixel) will be to the right or bottom (for efficiency reasons)
+    static Rectangle createRectangleFromMiddle(int MiddleX, int MiddleY, int Width, int Height);
+
     // Conversion operator to convert Rectangle to SDL_Rect
     operator SDL_Rect() const;
 

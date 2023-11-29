@@ -43,6 +43,7 @@ namespace globals
     {
         const int ROWS = 8;
         const int COLS = ROWS;
+        const int SQUARE_AMOUNT = ROWS * COLS;
 
         const std::string FEN_default = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     };

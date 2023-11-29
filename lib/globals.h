@@ -6,6 +6,7 @@
 #include <map>
 
 #include "RGBA_Color.h"
+#include "Vec2.h"
 
 // in case needed
 #define NULL_STATEMENT ((void *)0) // statement that does nothing // the same as nullptr in C++
@@ -18,10 +19,9 @@ enum GameStatus : bool
 
 namespace globals
 {
-    const std::string PATH = "/Users/ak/projects/Proj/Chess/Chess";
     namespace piece
     {
-        const std::string spritePath = PATH + "/img/piece/ChessPieceSpriteSheetVer2.bmp";
+        const std::string spritePath = "img/piece/ChessPieceSpriteSheetVer2.bmp";
 
         const std::array<std::string, 12> chessPieces = {
             "♔", // White King
@@ -52,7 +52,7 @@ namespace globals
         const int DEFAULT_FONT_SIZE = 12;
         
         namespace path {
-            const std::string ROBOTO = PATH + "font/Roboto/";
+            const std::string ROBOTO = "font/Roboto/";
         };
 
         namespace name {

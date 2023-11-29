@@ -205,41 +205,41 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
                 {
                 // handle white
                 case 'P':
-                    data.PiecePlacement[part1.row][part1.col] = new Pawn(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Pawn, PieceColor::White);
                     break;
                 case 'N':
-                    data.PiecePlacement[part1.row][part1.col] = new Knight(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Knight, PieceColor::White);
                     break;
                 case 'B':
-                    data.PiecePlacement[part1.row][part1.col] = new Bishop(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Bishop, PieceColor::White);
                     break;
                 case 'R':
-                    data.PiecePlacement[part1.row][part1.col] = new Rook(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Rook, PieceColor::White);
                     break;
                 case 'Q':
-                    data.PiecePlacement[part1.row][part1.col] = new Queen(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Queen, PieceColor::White);
                     break;
                 case 'K':
-                    data.PiecePlacement[part1.row][part1.col] = new King(PieceColor::White);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::King, PieceColor::White);
                     break;
                 // handle black
                 case 'p':
-                    data.PiecePlacement[part1.row][part1.col] = new Pawn(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Pawn, PieceColor::Black);
                     break;
                 case 'n':
-                    data.PiecePlacement[part1.row][part1.col] = new Knight(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Knight, PieceColor::Black);
                     break;
                 case 'b':
-                    data.PiecePlacement[part1.row][part1.col] = new Bishop(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Bishop, PieceColor::Black);
                     break;
                 case 'r':
-                    data.PiecePlacement[part1.row][part1.col] = new Rook(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Rook, PieceColor::Black);
                     break;
                 case 'q':
-                    data.PiecePlacement[part1.row][part1.col] = new Queen(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Queen, PieceColor::Black);
                     break;
                 case 'k':
-                    data.PiecePlacement[part1.row][part1.col] = new King(PieceColor::Black);
+                    data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::King, PieceColor::Black);
                     break;
 
                 default:

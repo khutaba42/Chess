@@ -17,6 +17,7 @@ public:
     };
 
 public:
+    Rectangle();
     Rectangle(int x, int y, int w, int h);
     // Rectangle(const SDL_Rect &rect);
     const Rectangle &operator=(const Rectangle &src);

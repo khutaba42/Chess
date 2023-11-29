@@ -1,6 +1,8 @@
 #include <SDL2/SDL.h>
 #include "Rectangle.h"
 
+Rectangle::Rectangle() {}
+
 Rectangle::Rectangle(int x, int y, int w, int h)
     : x(x),
       y(y),

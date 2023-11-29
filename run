@@ -48,13 +48,13 @@ if [ $# -eq 1 ]; then
     elif [ "$1" = "debug" ]; then
         # create executable
         echo "Compilation Process Started.."
-        $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR
+        $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK
         echo "Compilation Process Finished.."
     fi
 else 
     # create executable
     echo "Compilation Process Started.."
-    $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 2> $ERROR
+    $COMPILER $COMPILER_VERSION $FLAGS -o $EXEC $GLAD $SRC_FILES $LIB_FILES $FRAMEWORK 
     echo "Compilation Process Finished.."
     # run executable
     echo "Running Executable.."

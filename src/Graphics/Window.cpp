@@ -1,10 +1,20 @@
+#include <SDL2/SDL.h>
+
+#include <utility> // for std::pair
+#include <map>
+#include <string>
+
 #include "Window.h"
+
 #include "globals.h"
+#include "RGBA_Color.h"
 #include "Rectangle.h"
+#include "Piece.h"
 
 Window::Window(const std::string &WindowName, int Width, int Height)
     : __window(nullptr),
       __renderer(nullptr),
+      __pieces(nullptr),
       __width(Width),
       __height(Height)
 {
@@ -44,21 +54,28 @@ Window::Window(const std::string &WindowName, int Width, int Height)
         SDL_Quit();
         throw std::runtime_error("Failed to create renderer.");
     }
+
+    // load pieces
+    __pieces = __loadPieces();
 }
 
 Window::~Window()
 {
     // Cleanup and exit
+    __destroyPieces();
     SDL_DestroyRenderer(__renderer);
     SDL_DestroyWindow(__window);
     // Quit SDL subsystems
     SDL_Quit();
 }
 
+int Window::getWidth() const { return __width; }
+int Window::getHeight() const { return __height; }
+
 void Window::updateWindow(int Width, int Height)
 {
-    setWidth(Width);
-    setHeight(Height);
+    __setWidth(Width);
+    __setHeight(Height);
 }
 
 void Window::drawRectangle(Rectangle rect, RGBA_Color color)
@@ -74,15 +91,97 @@ void Window::drawRectangle(int x, int y, int w, int h, RGBA_Color color)
     drawRectangle({x, y, w, h}, color);
 }
 
-void Window::drawTexture(SDL_Texture *Texture, Rectangle *src, Rectangle *dest)
+const int SPRITE_PIECE_SIDE_LENGTH_VER_1 = 133;
+std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectanglesVER1 = {
+    // Pieces
+    {   {PieceEnum::King    , PieceColor::Black },  {0  , 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Queen   , PieceColor::Black },  {133, 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Bishop  , PieceColor::Black },  {266, 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Knight  , PieceColor::Black },  {399, 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Rook    , PieceColor::Black },  {532, 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Pawn    , PieceColor::Black },  {665, 133, SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::King    , PieceColor::White },  {0  , 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Queen   , PieceColor::White },  {133, 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Bishop  , PieceColor::White },  {266, 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Knight  , PieceColor::White },  {399, 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Rook    , PieceColor::White },  {532, 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+    {   {PieceEnum::Pawn    , PieceColor::White },  {665, 0  , SPRITE_PIECE_SIDE_LENGTH_VER_1, SPRITE_PIECE_SIDE_LENGTH_VER_1}},
+
+    // None
+    {{PieceEnum::None, PieceColor::None}, {0, 0, 0, 0}}
+
+};
+const int SPRITE_PIECE_SIDE_LENGTH_VER_2 = 64;
+std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectanglesVER2 = {
+    // Pieces
+    {   {PieceEnum::King    , PieceColor::Black },  {0  , 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Queen   , PieceColor::Black },  {64 , 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Rook    , PieceColor::Black },  {128, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Knight  , PieceColor::Black },  {192, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Bishop  , PieceColor::Black },  {256, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Pawn    , PieceColor::Black },  {320, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::King    , PieceColor::White },  {0  , 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Queen   , PieceColor::White },  {64 , 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Rook    , PieceColor::White },  {128, 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Knight  , PieceColor::White },  {192, 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Bishop  , PieceColor::White },  {256, 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+    {   {PieceEnum::Pawn    , PieceColor::White },  {320, 64, SPRITE_PIECE_SIDE_LENGTH_VER_2, SPRITE_PIECE_SIDE_LENGTH_VER_2}},
+
+    // None
+    {{PieceEnum::None, PieceColor::None}, {0, 0, 0, 0}}
+
+};
+std::map<std::pair<PieceEnum, PieceColor>, Rectangle> PieceRectangle = pieceRectanglesVER2;
+
+void Window::drawPiece(Piece piece, Rectangle *dest)
 {
-    SDL_RenderCopy(this->getRenderer(), Texture, cast_Rectangle_to_SDL_Rect(src), cast_Rectangle_to_SDL_Rect(dest));
+    SDL_RenderCopy(__getRenderer(), __getPieceTexture(), cast_Rectangle_to_SDL_Rect(&PieceRectangle[{piece.type(), piece.color()}]), cast_Rectangle_to_SDL_Rect(dest));
 }
 
-SDL_Window *Window::getWindow() const { return __window; }
-SDL_Renderer *Window::getRenderer() const { return __renderer; }
-int Window::getWidth() const { return __width; }
-int Window::getHeight() const { return __height; }
+SDL_Window *Window::__getWindow() const { return __window; }
+SDL_Renderer *Window::__getRenderer() const { return __renderer; }
+SDL_Texture *Window::__getPieceTexture() const { return __pieces; }
 
-void Window::setWidth(int width) { __width = width; }
-void Window::setHeight(int height) { __height = height; }
+void Window::__setWidth(int width) { __width = width; }
+void Window::__setHeight(int height) { __height = height; }
+
+SDL_Texture *Window::__loadTexture(const std::string &Path)
+{
+    SDL_Surface *surface = nullptr;
+    surface = SDL_LoadBMP(Path.c_str());
+    if (!surface)
+    {
+        printf("Unable to load bitmap: %s\n", SDL_GetError());
+        throw std::runtime_error("Failed to create surface for image " + Path + "\n");
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(__getRenderer(), surface);
+    if (!texture)
+    {
+        printf("Unable to load bitmap texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        throw std::runtime_error("Failed to create texture.\n");
+    }
+    SDL_FreeSurface(surface);
+
+    return texture;
+}
+
+SDL_Texture *Window::__loadPieces()
+{
+    return __loadTexture(globals::piece::spritePath);
+}
+
+void Window::__destroyTexture(SDL_Texture *&Texture)
+{
+    // Passing NULL or an otherwise invalid texture to `SDL_DestroyTexture` will set the SDL error message to "Invalid texture".
+    if (Texture)
+    {
+        SDL_DestroyTexture(Texture);
+    }
+    Texture = nullptr;
+}
+
+void Window::__destroyPieces()
+{
+    __destroyTexture(__pieces);
+}

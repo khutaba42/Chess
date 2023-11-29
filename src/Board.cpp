@@ -142,8 +142,23 @@ bool Board::isKingInCheck(const Board &board, PieceColor KingColor)
     PieceColor activeColor = board.getActiveColor();
 
     // Look for the king square
-    
 }
+
+enum PieceLetters
+{
+    WhitePawn = 'P',
+    WhiteRook = 'R',
+    WhiteBishop = 'B',
+    WhiteKnight = 'N',
+    WhiteQueen = 'Q',
+    WhiteKing = 'K',
+    BlackPawn = 'p',
+    BlackRook = 'r',
+    BlackBishop = 'b',
+    BlackKnight = 'n',
+    BlackQueen = 'q',
+    BlackKing = 'k'
+};
 
 Board::FEN_data Board::FEN_decoder(const std::string &FEN)
 {
@@ -203,49 +218,47 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
             {
                 switch (letter)
                 {
-                // handle white
-                case 'P':
+                case PieceLetters::WhitePawn:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Pawn, PieceColor::White);
                     break;
-                case 'N':
+                case PieceLetters::WhiteKnight:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Knight, PieceColor::White);
                     break;
-                case 'B':
+                case PieceLetters::WhiteBishop:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Bishop, PieceColor::White);
                     break;
-                case 'R':
+                case PieceLetters::WhiteRook:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Rook, PieceColor::White);
                     break;
-                case 'Q':
+                case PieceLetters::WhiteQueen:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Queen, PieceColor::White);
                     break;
-                case 'K':
+                case PieceLetters::WhiteKing:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::King, PieceColor::White);
                     break;
-                // handle black
-                case 'p':
+                case PieceLetters::BlackPawn:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Pawn, PieceColor::Black);
                     break;
-                case 'n':
+                case PieceLetters::BlackKnight:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Knight, PieceColor::Black);
                     break;
-                case 'b':
+                case PieceLetters::BlackBishop:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Bishop, PieceColor::Black);
                     break;
-                case 'r':
+                case PieceLetters::BlackRook:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Rook, PieceColor::Black);
                     break;
-                case 'q':
+                case PieceLetters::BlackQueen:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::Queen, PieceColor::Black);
                     break;
-                case 'k':
+                case PieceLetters::BlackKing:
                     data.PiecePlacement[part1.row][part1.col] = new Piece(PieceEnum::King, PieceColor::Black);
                     break;
-
                 default:
                     std::cout << "Unknown format of FEN in part 0 <" << letter << ">.\n";
                     break;
                 }
+
                 part1.col++;
             }
 

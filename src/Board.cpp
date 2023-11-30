@@ -9,13 +9,15 @@ Board::Board(const std::string &FEN)
 
 Board::~Board()
 {
-    iterateRowCol(
-        [this](int row, int col)
+    int Rows = this->getRows();
+    int Cols = this->getCols();
+    for (int row = 0; row < Rows; row++)
+    {
+        for (int col = 0; col < Cols; col++)
         {
             delete this->__data.PiecePlacement[row][col];
         }
-
-    );
+    }
 }
 
 int Board::getRows() const { return __rows; }
@@ -142,6 +144,7 @@ bool Board::isKingInCheck(const Board &board, PieceColor KingColor)
     PieceColor activeColor = board.getActiveColor();
 
     // Look for the king square
+    return true;
 }
 
 enum PieceLetters

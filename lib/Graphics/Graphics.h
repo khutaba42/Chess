@@ -1,13 +1,13 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <string>
-#include <memory>
+#include <vector>
 
 #include "Window.h"
 #include "Board.h"
-#include "Piece.h"
 #include "Rectangle.h"
+#include "Vec2.h"
+
 class Graphics
 {
 public:
@@ -20,49 +20,56 @@ private:
     Window __window;
 
     Board __board;
-    struct Rect_data
+    struct GraphicalBoard
     {
-        Rectangle BoardFrame;
-        int SquareSideLength;
-        Rectangle BoardBorders;
-        std::vector<Rectangle> Squares;
-        std::pair<bool, Vec2<int>> IlluminatedSquare;
-        struct ClickedPiece
+        Rectangle boardFrame;
+        int squareSideLength;
+        Rectangle boardBorders;
+        struct SquareData
         {
-            bool Clicked;
-            Vec2<int> Position;
-            Rectangle CurrentRectanglePosition;
+            Rectangle coordinates;
+            Vec2<int> position;
+            bool hoveredOn;
+            bool attacked;
 
-            ClickedPiece(bool Clicked = false, Vec2<int> position = {-1, -1}, Rectangle CurrentRectanglePosition = {0, 0, 0, 0}) : Clicked(Clicked), Position(position), CurrentRectanglePosition(CurrentRectanglePosition) {}
+            SquareData() {}
+            SquareData(Rectangle coords, Vec2<int> pos) : coordinates(coords), position(pos), hoveredOn(false), attacked(false) {}
         };
-        std::unique_ptr<ClickedPiece> ClickedPieceInfo;
-
-        Rect_data(const Graphics &graphics, const Board &board);
+        std::vector<SquareData> squareData;
+        struct ClickedPieceInfo
+        {
+            bool clicked;
+            Vec2<int> initalPosition;
+            Rectangle rect;
+        };
+        ClickedPieceInfo clickedPiece;
     };
-    Rect_data __rectangles;
-    SDL_Texture *__piecesTexture;
+    GraphicalBoard __boardData;
 
     //-----------------//-----------------//-----------------//-----------------//
-    // Helper Functions
+    // Getters
+    // might throw and std::out_of_range error
+    GraphicalBoard &__getGraphicalBoardData();
+    GraphicalBoard::SquareData &__getSquareDataAt(int row, int col);
     int __getWindowWidth() const;
     int __getWindowHeight() const;
-    SDL_Renderer *__getRenderer();
+
+    // Helper
+    void __renderGame();
+    // Helper Functions for Window
     void __updateWindow(int Width, int Height);
 
-    void __updateRectData();
+    // Helper Functions for Board Graphics
+    void __updateGraphicalBoardData();
     void __drawBoard();
 
-    Vec2<int> __getSquare(int x, int y);
-    Vec2<int> __getSquare(Vec2<int> Coordinate);
-
-    void __clickOnPiece(int x, int y);
-    void __releasePiece(int x, int y);
-    void __updateClickedPieceRectanglePosition(int x, int y);
+    bool __pieceIsClicked(Vec2<int> Position);
 
     void __handleMousePosition(int x, int y);
     void __handleMouseDownEvent(int x, int y);
     void __handleMouseUpEvent(int x, int y);
 
-    SDL_Texture *__loadPieceTexture(const std::string &Path);
-    void __destroyTexture(SDL_Texture *&Texture);
+    void __clickOnPiece(int x, int y);
+    void __releasePiece(int x, int y);
+    void __updateClickedPieceRectanglePosition(int x, int y);
 };

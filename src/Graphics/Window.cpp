@@ -78,6 +78,28 @@ void Window::updateWindow(int Width, int Height)
     __setHeight(Height);
 }
 
+void Window::setDrawColor(RGBA_Color color) const
+{
+    SDL_SetRenderDrawColor(
+        __getRenderer(),
+        color.red(),
+        color.green(),
+        color.blue(),
+        color.opacity()
+
+    );
+}
+
+void Window::clearRenderer() const
+{
+    SDL_RenderClear(__getRenderer());
+}
+
+void Window::presentRenderer() const
+{
+    SDL_RenderPresent(__getRenderer());
+}
+
 void Window::drawRectangle(Rectangle rect, RGBA_Color color)
 {
     // Set the drawing color
@@ -136,6 +158,12 @@ std::map<std::pair<PieceEnum, PieceColor>, Rectangle> PieceRectangle = pieceRect
 void Window::drawPiece(Piece piece, Rectangle *dest)
 {
     SDL_RenderCopy(__getRenderer(), __getPieceTexture(), cast_Rectangle_to_SDL_Rect(&PieceRectangle[{piece.type(), piece.color()}]), cast_Rectangle_to_SDL_Rect(dest));
+}
+
+void Window::drawPiece(PieceEnum pieceType, PieceColor pieceColor, Rectangle *dest)
+
+{
+    SDL_RenderCopy(__getRenderer(), __getPieceTexture(), cast_Rectangle_to_SDL_Rect(&PieceRectangle[{pieceType, pieceColor}]), cast_Rectangle_to_SDL_Rect(dest));
 }
 
 SDL_Window *Window::__getWindow() const { return __window; }

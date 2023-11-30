@@ -18,9 +18,15 @@ public:
     int getHeight() const;
     // methods
     void updateWindow(int Width, int Height);
+
+    void setDrawColor(RGBA_Color color) const;
+    void clearRenderer() const;
+    void presentRenderer() const;
+
     void drawRectangle(Rectangle rect, RGBA_Color color);
     void drawRectangle(int x, int y, int w, int h, RGBA_Color color);
     void drawPiece(Piece piece, Rectangle *dest);
+    void drawPiece(PieceEnum pieceType, PieceColor pieceColor, Rectangle *dest);
 
 private:
     SDL_Window *__window;

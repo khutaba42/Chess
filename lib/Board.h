@@ -44,13 +44,6 @@ public:
     PieceMovementStatus movePiece(const Vec2<int> From, const Vec2<int> To);
     bool isKingInCheck(const Board &board, PieceColor KingColor);
 
-    template <typename FunctionObj>
-    void iterateRowCol(FunctionObj Function) const;
-    template <typename FunctionObj>
-    void iterateColRow(FunctionObj Function) const;
-    template <typename FunctionObj>
-    void iteratePieces(FunctionObj Function) const;
-
 private:
     struct FEN_data
     {
@@ -71,47 +64,3 @@ private:
     //? Forsyth-Edwards Notation Encoder
     FEN_data FEN_decoder(const std::string &FEN);
 };
-
-// templated functions' implementations here
-
-template <typename FunctionObj>
-void Board::iterateRowCol(FunctionObj Function) const
-{
-    int Rows = __rows, Cols = __cols;
-    for (int row = 0; row < Rows; row++)
-    {
-        for (int col = 0; col < Cols; col++)
-        {
-            Function(row, col);
-        }
-    }
-}
-
-template <typename FunctionObj>
-void Board::iterateColRow(FunctionObj Function) const
-{
-    int Rows = __rows, Cols = __cols;
-    for (int row = 0; row < Cols; row++)
-    {
-        for (int col = 0; col < Rows; col++)
-        {
-            Function(row, col);
-        }
-    }
-}
-
-template <typename FunctionObj>
-void Board::iteratePieces(FunctionObj Function) const
-{
-    int Rows = __rows, Cols = __cols;
-    for (int row = 0; row < Cols; row++)
-    {
-        for (int col = 0; col < Rows; col++)
-        {
-            if (__data.PiecePlacement[row][col])
-            {
-                Function(row, col);
-            }
-        }
-    }
-}

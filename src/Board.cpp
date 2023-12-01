@@ -67,6 +67,174 @@ void Board::swapPieces(const Vec2<int> a, const Vec2<int> b)
     return;
 }
 
+std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) const
+{
+    std::vector<Vec2<int>> attackedSquares;
+    if (this->inBoard(Square) && !this->squareOccupied(Square))
+    {
+        Piece piece = this->at(Square);
+        const PieceEnum type = piece.type();
+        const PieceColor color = piece.color();
+
+        int directionAmount;
+        int moveAmount; // Declare moveAmount here
+        Vec2<int> frontSquare;
+
+        switch (type)
+        {
+        case PieceEnum::Pawn:
+            frontSquare = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col};
+            if (this->inBoard(frontSquare)) // if frontSquare is not in the board then pawn must been promoted, else its a logic error
+            {
+                if (!this->squareOccupied(frontSquare)) // doesn't matter what color the pawn cant move there if it is occupied
+                {
+                    if (!piece.hasMoved())
+                    {
+                        const Vec2<int> Square_1 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col};
+                        if (this->inBoard(Square_1))
+                        {
+                            attackedSquares.push_back(Square_1);
+                        }
+                        const Vec2<int> Square_2 = {Square.row + ((color == PieceColor::White) ? (-2) : (2)), Square.col};
+                        if (this->inBoard(Square_2) && !this->squareOccupied(Square_2))
+                        {
+                            attackedSquares.push_back(Square_2);
+                        }
+                    }
+                    else
+                    {
+                        const Vec2<int> Square_1 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col};
+                        if (this->inBoard(Square_1))
+                        {
+                            attackedSquares.push_back(Square_1);
+                        }
+                    }
+                }
+                // if frontSquare is occupied or not, do this
+
+                const Vec2<int> diagonalSquare_1 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col + 1};
+                const Vec2<int> diagonalSquare_2 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col - 1};
+
+                // EnPassant info
+                const bool canEnPassant = this->__data.EnPassantTarget != "-";
+                const Vec2<int> EnPassantTarget = {this->__data.EnPassantTarget[1] - '1', (this->__data.EnPassantTarget[0] - 'a')};
+
+                // pawn cant eat pieces of the same color, enPassant availability
+                if (this->inBoard(diagonalSquare_1) && (((this->at(diagonalSquare_1).color() != color) && (this->at(diagonalSquare_1).color() != PieceColor::None)) || (canEnPassant && (EnPassantTarget == diagonalSquare_1))))
+                {
+                    attackedSquares.push_back(diagonalSquare_1);
+                }
+                if (this->inBoard(diagonalSquare_2) && (((this->at(diagonalSquare_2).color() != color) && (this->at(diagonalSquare_2).color() != PieceColor::None)) || (canEnPassant && (EnPassantTarget == diagonalSquare_2))))
+                {
+                    attackedSquares.push_back(diagonalSquare_2);
+                }
+            }
+            else
+            {
+                throw std::logic_error("Pawn must have been promoted already.\n");
+            }
+            break;
+        case PieceEnum::King:
+            directionAmount = globals::board::ALL_DIRECTIONS.size();
+            for (int direction = 0; direction < directionAmount; direction++)
+            {
+                Vec2<int> potentialSquare = Square + globals::board::ALL_DIRECTIONS[direction];
+                if (this->inBoard(potentialSquare))
+                {
+                    if (this->at(potentialSquare).color() != color)
+                    {
+                        attackedSquares.push_back(potentialSquare);
+                    }
+                }
+            }
+            break;
+        case PieceEnum::Knight:
+            moveAmount = globals::board::KNIGHT_DIRECTIONS.size();
+            for (int Counter = 0; Counter < moveAmount; Counter++)
+            {
+                Vec2<int> potentialSquare = Square + globals::board::KNIGHT_DIRECTIONS[Counter];
+                if (this->inBoard(potentialSquare) && (this->at(potentialSquare).color() != color))
+                {
+                    attackedSquares.push_back(potentialSquare);
+                }
+            }
+            break;
+        case PieceEnum::Bishop:
+            directionAmount = globals::board::DIAGONAL_DIRECTIONS.size();
+            for (int direction = 0; direction < directionAmount; direction++)
+            {
+                Vec2<int> potentialSquare = Square + globals::board::DIAGONAL_DIRECTIONS[direction];
+                while (this->inBoard(potentialSquare))
+                {
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        if (this->at(potentialSquare).color() != color)
+                        {
+                            attackedSquares.push_back(potentialSquare);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    attackedSquares.push_back(potentialSquare);
+                    potentialSquare += globals::board::DIAGONAL_DIRECTIONS[direction];
+                }
+            }
+            break;
+        case PieceEnum::Rook:
+            directionAmount = globals::board::STRAIGHT_DIRECTIONS.size();
+            for (int direction = 0; direction < directionAmount; direction++)
+            {
+                Vec2<int> potentialSquare = Square + globals::board::STRAIGHT_DIRECTIONS[direction];
+                while (this->inBoard(potentialSquare))
+                {
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        if (this->at(potentialSquare).color() != color)
+                        {
+                            attackedSquares.push_back(potentialSquare);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    attackedSquares.push_back(potentialSquare);
+                    potentialSquare += globals::board::STRAIGHT_DIRECTIONS[direction];
+                }
+            }
+            break;
+        case PieceEnum::Queen:
+            directionAmount = globals::board::ALL_DIRECTIONS.size();
+            for (int direction = 0; direction < directionAmount; direction++)
+            {
+                Vec2<int> potentialSquare = Square + globals::board::ALL_DIRECTIONS[direction];
+                while (this->inBoard(potentialSquare))
+                {
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        if (this->at(potentialSquare).color() != color)
+                        {
+                            attackedSquares.push_back(potentialSquare);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    attackedSquares.push_back(potentialSquare);
+                    potentialSquare += globals::board::ALL_DIRECTIONS[direction];
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return attackedSquares;
+}
+
 Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int> To)
 {
     //? Variables for the Do Nothing statements
@@ -110,7 +278,6 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
     {
         return FromHasNonActiveColorPiece;
     }
-
     // check if the move in En passant
     // else if ()
     // {

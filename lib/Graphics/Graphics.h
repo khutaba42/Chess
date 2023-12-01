@@ -29,20 +29,21 @@ private:
         {
             Rectangle coordinates;
             Vec2<int> position;
-            bool hoveredOn;
             bool attacked;
 
             SquareData() {}
-            SquareData(Rectangle coords, Vec2<int> pos) : coordinates(coords), position(pos), hoveredOn(false), attacked(false) {}
+            SquareData(Rectangle coords, Vec2<int> pos) : coordinates(coords), position(pos), attacked(false) {}
         };
         std::vector<SquareData> squareData;
-        struct ClickedPieceInfo
+        struct MouseInfo
         {
+            bool hovering;
+            Vec2<int> hoveredOnPosition;
             bool clicked;
-            Vec2<int> initalPosition;
-            Rectangle rect;
+            Vec2<int> clickedPieceInitalPosition;
+            Rectangle clickedPieceRectangle;
         };
-        ClickedPieceInfo clickedPiece;
+        MouseInfo mouseInfo;
     };
     GraphicalBoard __boardData;
 

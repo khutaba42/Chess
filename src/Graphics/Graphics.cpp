@@ -111,7 +111,7 @@ int Graphics::__getWindowHeight() const
 void Graphics::__renderGame()
 {
     // set a color to flush the back renderer
-    __window.setDrawColor(globals::color::darkGreen);
+    __window.setDrawColor(globals::color::black);
     __window.clearRenderer();
 
     // draw the board
@@ -136,27 +136,38 @@ void Graphics::__updateGraphicalBoardData()
     int WindowWidth = __getWindowWidth();
     int WindowHeight = __getWindowHeight();
 
+    const int boardFrameWidthAndHeight = std::min(WindowWidth, WindowHeight);
+
     int Rows = __board.getRows();
     int Cols = __board.getCols();
 
     __boardData.boardFrame = {
         (WindowWidth > WindowHeight) ? ((WindowWidth - WindowHeight) / 2) : (0),
         (WindowWidth < WindowHeight) ? ((WindowHeight - WindowWidth) / 2) : (0),
-        std::min(WindowWidth, WindowHeight),
-        std::min(WindowWidth, WindowHeight)
+        boardFrameWidthAndHeight,
+        boardFrameWidthAndHeight
 
     };
 
     __boardData.squareSideLength = __boardData.boardFrame.w / (Cols + 1);
 
+    const int boardBoardersWidth = (__boardData.boardFrame.w / (Cols + 1)) * Cols;
+    const int boardBoardersHeight = (__boardData.boardFrame.h / (Rows + 1)) * Rows;
+
     __boardData.boardBorders = {
-        __boardData.boardFrame.x + (__boardData.boardFrame.w - (__boardData.squareSideLength) * Cols) / 2,
-        __boardData.boardFrame.y + (__boardData.boardFrame.h - (__boardData.squareSideLength) * Rows) / 2,
-        (__boardData.boardFrame.w / (Cols + 1)) * Cols,
-        (__boardData.boardFrame.h / (Rows + 1)) * Rows
+        __boardData.boardFrame.x + ((__boardData.boardFrame.w - boardBoardersWidth) / 2),
+        __boardData.boardFrame.y + ((__boardData.boardFrame.h - boardBoardersHeight) / 2),
+        boardBoardersWidth,
+        boardBoardersHeight
 
     };
-
+    /**
+     * ! this following line is Important
+     * it prevents a bug where the vector `squareData` keeps growing
+     * and the board only shows the first ever squares on the renderer
+    */
+   __boardData.squareData.clear();
+   
     for (int row = 0; row < Rows; row++)
     {
         for (int col = 0; col < Cols; col++)
@@ -180,24 +191,24 @@ void Graphics::__drawBoard()
     int Cols = __board.getCols();
 
     __window.drawRectangle(
-        __boardData.boardFrame.x,
-        __boardData.boardFrame.y,
-        __boardData.boardFrame.w,
-        __boardData.boardFrame.h,
+        __boardData.boardFrame,
         BoardFrameColor
 
     );
+
+    GraphicalBoard &boardData = __getGraphicalBoardData();
 
     for (int row = 0; row < Rows; row++)
     {
         for (int col = 0; col < Cols; col++)
         {
+            Vec2<int> square_coor = {row, col};
             GraphicalBoard::SquareData &info = __getSquareDataAt(row, col);
 
             // draw "white" square
             if ((row + col) % 2 == 0)
             {
-                if (info.hoveredOn)
+                if (boardData.mouseInfo.hovering && (boardData.mouseInfo.hoveredOnPosition == square_coor))
                 {
                     __window.drawRectangle(info.coordinates, globals::color::lightWhiteClicked);
                 }
@@ -209,7 +220,7 @@ void Graphics::__drawBoard()
             // draw "black" square
             else // (row + col) % 2 == 1
             {
-                if (info.hoveredOn)
+                if (boardData.mouseInfo.hovering && (boardData.mouseInfo.hoveredOnPosition == square_coor))
                 {
                     __window.drawRectangle(info.coordinates, globals::color::darkGreenClicked);
                 }
@@ -239,9 +250,9 @@ void Graphics::__drawBoard()
         }
     }
     // must draw the clicked piece last so it wouldn't overlap with other objects being rendered
-    if (__boardData.clickedPiece.clicked)
+    if (__boardData.mouseInfo.clicked)
     {
-        __window.drawPiece(__board.at(__boardData.clickedPiece.initalPosition), &__boardData.clickedPiece.rect);
+        __window.drawPiece(__board.at(__boardData.mouseInfo.clickedPieceInitalPosition), &__boardData.mouseInfo.clickedPieceRectangle);
     }
 
     return;
@@ -251,7 +262,7 @@ void Graphics::__drawBoard()
 
 bool Graphics::__pieceIsClicked(Vec2<int> Position)
 {
-    return (Position == __boardData.clickedPiece.initalPosition) && __boardData.clickedPiece.clicked;
+    return (Position == __boardData.mouseInfo.clickedPieceInitalPosition) && __boardData.mouseInfo.clicked;
 }
 
 /// ---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*--- ///
@@ -282,11 +293,13 @@ void Graphics::__handleMousePosition(int x, int y)
 
         __updateClickedPieceRectanglePosition(x, y);
 
-        __getSquareDataAt(square_row, square_col).hoveredOn = true;
+        board.mouseInfo.hovering = true;
+        board.mouseInfo.hoveredOnPosition = {square_row, square_col};
     }
     else
     {
-        __getSquareDataAt(square_row, square_col).hoveredOn = false;
+        board.mouseInfo.hovering = false;
+
         if (board_frame.inRectangle(x, y)) // if the mouse is inside the board frame
         {
             __updateClickedPieceRectanglePosition(x, y);
@@ -313,19 +326,19 @@ void Graphics::__clickOnPiece(int x, int y)
     const int square_col = (x - board_borders.x) / side_length;
     const int square_row = (y - board_borders.y) / side_length;
 
-    if (!__boardData.clickedPiece.clicked)
+    if (!__boardData.mouseInfo.clicked)
     {
-        __boardData.clickedPiece.clicked = true;
-        __boardData.clickedPiece.initalPosition = {square_row, square_col};
-        __boardData.clickedPiece.rect = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
+        __boardData.mouseInfo.clicked = true;
+        __boardData.mouseInfo.clickedPieceInitalPosition = {square_row, square_col};
+        __boardData.mouseInfo.clickedPieceRectangle = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
     }
 }
 
 void Graphics::__releasePiece(int x, int y)
 {
-    if (__boardData.clickedPiece.clicked)
+    if (__boardData.mouseInfo.clicked)
     {
-        __boardData.clickedPiece.clicked = false;
+        __boardData.mouseInfo.clicked = false;
 
         const Rectangle &board_frame = __boardData.boardFrame;
         const Rectangle &board_borders = __boardData.boardBorders;
@@ -337,7 +350,7 @@ void Graphics::__releasePiece(int x, int y)
             Vec2<int> square_coor = {square_row, square_col};
             if (__board.inBoard(square_coor))
             {
-                __board.swapPieces(__boardData.clickedPiece.initalPosition, square_coor);
+                __board.swapPieces(__boardData.mouseInfo.clickedPieceInitalPosition, square_coor);
             }
         }
     }
@@ -345,9 +358,9 @@ void Graphics::__releasePiece(int x, int y)
 
 void Graphics::__updateClickedPieceRectanglePosition(int x, int y)
 {
-    if (__boardData.clickedPiece.clicked)
+    if (__boardData.mouseInfo.clicked)
     {
         const int side_length = __boardData.squareSideLength;
-        __boardData.clickedPiece.rect = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
+        __boardData.mouseInfo.clickedPieceRectangle = Rectangle::createRectangleFromMiddle(x, y, side_length, side_length);
     }
 }

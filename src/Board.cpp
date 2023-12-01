@@ -241,6 +241,8 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
     bool FromInBoard = this->inBoard(From);
     bool ToInBoard = this->inBoard(To);
 
+    bool FromAndToSquareAreTheSame = From == To;
+
     bool FromSquareOccupied = this->squareOccupied(From);
     //? Variables for the Mixed statements
 
@@ -277,6 +279,11 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
     else if (this->at(From).color() != __data.ActiveColor)
     {
         return FromHasNonActiveColorPiece;
+    }
+    // check if From and To are the same square
+    else if (!FromAndToSquareAreTheSame)
+    {
+        return FromAndToSquareAreTheSameSquare;
     }
     // check if the move in En passant
     // else if ()

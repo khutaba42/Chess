@@ -29,6 +29,8 @@ public:
         ToPositionNotInBoard,
         FromAndToPositionNotInBoard,
 
+        FromAndToSquareAreTheSameSquare,
+
         FromSquareNotOccupied,
 
         FromHasNonActiveColorPiece,

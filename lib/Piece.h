@@ -21,11 +21,14 @@ enum class PieceColor
 class Piece
 {
 public:
-    Piece(PieceEnum Type = PieceEnum::None, PieceColor Color = PieceColor::None);
+    Piece(PieceEnum Type = PieceEnum::None, PieceColor Color = PieceColor::None, bool hasMoved = false);
     ~Piece();
 
     PieceEnum type() const;
     PieceColor color() const;
+    bool hasMoved() const;
+
+    void move();
 
     friend bool operator==(const Piece &a, const Piece &b);
     friend bool operator!=(const Piece &a, const Piece &b);
@@ -33,4 +36,6 @@ public:
 private:
     PieceEnum __type;
     PieceColor __color;
+
+    bool __hasMoved;
 };

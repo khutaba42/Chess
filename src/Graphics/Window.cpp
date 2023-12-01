@@ -153,6 +153,26 @@ std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectanglesVER2 = {
     {{PieceEnum::None, PieceColor::None}, {0, 0, 0, 0}}
 
 };
+const int SPRITE_PIECE_SIDE_LENGTH_VER_3 = 16;
+std::map<std::pair<PieceEnum, PieceColor>, Rectangle> pieceRectanglesVER3 = {
+    // Pieces
+    {   {PieceEnum::King    , PieceColor::Black },  {0 , 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Queen   , PieceColor::Black },  {16, 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Rook    , PieceColor::Black },  {32, 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Knight  , PieceColor::Black },  {48, 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Bishop  , PieceColor::Black },  {64, 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Pawn    , PieceColor::Black },  {80, 16, SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::King    , PieceColor::White },  {0 , 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Queen   , PieceColor::White },  {16, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Rook    , PieceColor::White },  {32, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Knight  , PieceColor::White },  {48, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Bishop  , PieceColor::White },  {64, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+    {   {PieceEnum::Pawn    , PieceColor::White },  {80, 0 , SPRITE_PIECE_SIDE_LENGTH_VER_3, SPRITE_PIECE_SIDE_LENGTH_VER_3}},
+
+    // None
+    {{PieceEnum::None, PieceColor::None}, {0, 0, 0, 0}}
+
+};
 std::map<std::pair<PieceEnum, PieceColor>, Rectangle> PieceRectangle = pieceRectanglesVER2;
 
 void Window::drawPiece(Piece piece, Rectangle *dest)

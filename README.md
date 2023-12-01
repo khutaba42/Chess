@@ -1,4 +1,5 @@
 ## On macOS:
+### ! (running an M1 processor)
 I assume you have Homebrew downloaded and downloaded SDL2 through it (using `brew install sdl2`) and make sure gcc is also downloaded (`brew install gcc`). 
 1. change the `WORKING_DIR` value to the path of the project's path on your machine.
 2. run the `./run ` script (make sure the terminal is in the dir the run file is in).

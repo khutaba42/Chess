@@ -167,7 +167,7 @@ void Graphics::__updateGraphicalBoardData()
      * and the board only shows the first ever squares on the renderer
     */
    __boardData.squareData.clear();
-   
+
     for (int row = 0; row < Rows; row++)
     {
         for (int col = 0; col < Cols; col++)
@@ -237,12 +237,7 @@ void Graphics::__drawBoard()
                 Rectangle rect = info.coordinates;
                 Rectangle dest = {rect.x, rect.y, rect.w, rect.h};
                 // don't draw clicked piece
-                if (__pieceIsClicked(info.position))
-                {
-                    __window.drawPiece(piece, &dest);
-                }
-                // draw clicked piece
-                else
+                if (!__pieceIsClicked(info.position))
                 {
                     __window.drawPiece(piece, &dest);
                 }

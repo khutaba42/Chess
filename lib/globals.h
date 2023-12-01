@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
 
 #include "RGBA_Color.h"
@@ -46,6 +47,46 @@ namespace globals
         const int SQUARE_AMOUNT = ROWS * COLS;
 
         const std::string FEN_default = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        const std::array<Vec2<int>, 4> DIAGONAL_DIRECTIONS = {
+            Vec2<int>(1, 1),
+            Vec2<int>(1, -1),
+            Vec2<int>(-1, -1),
+            Vec2<int>(-1, 1)
+
+        };
+
+        const std::array<Vec2<int>, 4> STRAIGHT_DIRECTIONS = {
+            Vec2<int>(0, 1),
+            Vec2<int>(-1, 0),
+            Vec2<int>(0, -1),
+            Vec2<int>(1, 0)
+
+        };
+
+        const std::array<Vec2<int>, 8> ALL_DIRECTIONS = {
+            Vec2<int>(0, 1),
+            Vec2<int>(0, -1),
+            Vec2<int>(1, 0),
+            Vec2<int>(-1, 0),
+            Vec2<int>(1, 1),
+            Vec2<int>(1, -1),
+            Vec2<int>(-1, 1),
+            Vec2<int>(-1, -1)
+
+        };
+
+        const std::array<Vec2<int>, 8> KNIGHT_DIRECTIONS = {
+            Vec2<int>(+2, +1),
+            Vec2<int>(+2, -1),
+            Vec2<int>(-2, +1),
+            Vec2<int>(-2, -1),
+            Vec2<int>(+1, +2),
+            Vec2<int>(+1, -2),
+            Vec2<int>(-1, +2),
+            Vec2<int>(-1, -2)
+
+        };
     };
 
     namespace font

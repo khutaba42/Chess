@@ -51,6 +51,7 @@ private:
     // Getters
     // might throw and std::out_of_range error
     GraphicalBoard &__getGraphicalBoardData();
+    GraphicalBoard::SquareData &__getSquareDataAt(Vec2<int> Pos);
     GraphicalBoard::SquareData &__getSquareDataAt(int row, int col);
     int __getWindowWidth() const;
     int __getWindowHeight() const;

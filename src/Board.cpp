@@ -70,7 +70,7 @@ void Board::swapPieces(const Vec2<int> a, const Vec2<int> b)
 std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) const
 {
     std::vector<Vec2<int>> attackedSquares;
-    if (this->inBoard(Square) && !this->squareOccupied(Square))
+    if (this->inBoard(Square) && this->squareOccupied(Square))
     {
         Piece piece = this->at(Square);
         const PieceEnum type = piece.type();
@@ -171,6 +171,10 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         if (this->at(potentialSquare).color() != color)
                         {
                             attackedSquares.push_back(potentialSquare);
+                            if (this->at(potentialSquare).color() != PieceColor::None)
+                            {
+                                break;
+                            }
                         }
                         else
                         {
@@ -194,6 +198,10 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         if (this->at(potentialSquare).color() != color)
                         {
                             attackedSquares.push_back(potentialSquare);
+                            if (this->at(potentialSquare).color() != PieceColor::None)
+                            {
+                                break;
+                            }
                         }
                         else
                         {
@@ -217,6 +225,10 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         if (this->at(potentialSquare).color() != color)
                         {
                             attackedSquares.push_back(potentialSquare);
+                            if (this->at(potentialSquare).color() != PieceColor::None)
+                            {
+                                break;
+                            }
                         }
                         else
                         {

@@ -48,6 +48,9 @@ namespace globals
 
         const std::string FEN_default = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+        const std::string EMPTY_SQUARE_ATTACKED_PATH = "img/SolidCircleAttacked.bmp";
+        const std::string OCCUPIED_SQUARE_ATTACKED_PATH = "img/HollowedCircleAttacked.bmp";
+
         const std::array<Vec2<int>, 4> DIAGONAL_DIRECTIONS = {
             Vec2<int>(1, 1),
             Vec2<int>(1, -1),

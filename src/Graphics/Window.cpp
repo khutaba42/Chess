@@ -55,14 +55,16 @@ Window::Window(const std::string &WindowName, int Width, int Height)
         throw std::runtime_error("Failed to create renderer.");
     }
 
-    // load pieces
+    // load textures
     __pieces = __loadPieces();
+    __attackedEmptySquareCircle = __loadEmptySquareAttacked();
+    __attackedOccupiedSquareCircle = __loadOccupiedSquareAttacked();
 }
 
 Window::~Window()
 {
     // Cleanup and exit
-    __destroyPieces();
+    __destroyTextures();
     SDL_DestroyRenderer(__renderer);
     SDL_DestroyWindow(__window);
     // Quit SDL subsystems
@@ -186,9 +188,17 @@ void Window::drawPiece(PieceEnum pieceType, PieceColor pieceColor, Rectangle *de
     SDL_RenderCopy(__getRenderer(), __getPieceTexture(), cast_Rectangle_to_SDL_Rect(&PieceRectangle[{pieceType, pieceColor}]), cast_Rectangle_to_SDL_Rect(dest));
 }
 
+void Window::drawAttackedSquareCircle(Rectangle *dest, bool emptySquare)
+{
+    // srcrect – NULL for the entire texture
+    SDL_RenderCopy(__getRenderer(), (emptySquare) ? __getEmptySquareAttackedTexture() : __getOccupiedSquareAttackedTexture(), nullptr, cast_Rectangle_to_SDL_Rect(dest));
+}
+
 SDL_Window *Window::__getWindow() const { return __window; }
 SDL_Renderer *Window::__getRenderer() const { return __renderer; }
 SDL_Texture *Window::__getPieceTexture() const { return __pieces; }
+SDL_Texture *Window::__getEmptySquareAttackedTexture() const { return __attackedEmptySquareCircle; }
+SDL_Texture *Window::__getOccupiedSquareAttackedTexture() const { return __attackedOccupiedSquareCircle; }
 
 void Window::__setWidth(int width) { __width = width; }
 void Window::__setHeight(int height) { __height = height; }
@@ -218,6 +228,15 @@ SDL_Texture *Window::__loadPieces()
 {
     return __loadTexture(globals::piece::spritePath);
 }
+SDL_Texture *Window::__loadEmptySquareAttacked()
+{
+    return __loadTexture(globals::board::EMPTY_SQUARE_ATTACKED_PATH);
+}
+
+SDL_Texture *Window::__loadOccupiedSquareAttacked()
+{
+    return __loadTexture(globals::board::OCCUPIED_SQUARE_ATTACKED_PATH);
+}
 
 void Window::__destroyTexture(SDL_Texture *&Texture)
 {
@@ -229,7 +248,9 @@ void Window::__destroyTexture(SDL_Texture *&Texture)
     Texture = nullptr;
 }
 
-void Window::__destroyPieces()
+void Window::__destroyTextures()
 {
     __destroyTexture(__pieces);
+    __destroyTexture(__attackedEmptySquareCircle);
+    __destroyTexture(__attackedOccupiedSquareCircle);
 }

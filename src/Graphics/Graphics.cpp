@@ -91,6 +91,11 @@ Graphics::GraphicalBoard &Graphics::__getGraphicalBoardData()
     return __boardData;
 }
 
+Graphics::GraphicalBoard::SquareData &Graphics::__getSquareDataAt(Vec2<int> Pos)
+{
+    return __boardData.squareData[Pos.row * __board.getCols() + Pos.col];
+}
+
 Graphics::GraphicalBoard::SquareData &Graphics::__getSquareDataAt(int row, int col)
 {
     return __boardData.squareData[row * __board.getCols() + col];
@@ -165,8 +170,8 @@ void Graphics::__updateGraphicalBoardData()
      * ! this following line is Important
      * it prevents a bug where the vector `squareData` keeps growing
      * and the board only shows the first ever squares on the renderer
-    */
-   __boardData.squareData.clear();
+     */
+    __boardData.squareData.clear();
 
     for (int row = 0; row < Rows; row++)
     {
@@ -244,10 +249,18 @@ void Graphics::__drawBoard()
             }
         }
     }
-    // must draw the clicked piece last so it wouldn't overlap with other objects being rendered
+    // draw the clicked piece
     if (__boardData.mouseInfo.clicked)
     {
-        __window.drawPiece(__board.at(__boardData.mouseInfo.clickedPieceInitalPosition), &__boardData.mouseInfo.clickedPieceRectangle);
+        Vec2<int> clickedPiecePos = __boardData.mouseInfo.clickedPieceInitalPosition;
+        // draw circles to specify squares that are attacked by the clicked piece
+        std::vector<Vec2<int>> attackedPositions = __board.getPieceAttackingSquares(clickedPiecePos);
+        for (Vec2<int> Position : attackedPositions)
+        {
+            __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, true);
+        }
+        // must draw the clicked piece last so it wouldn't overlap with other objects being rendered
+        __window.drawPiece(__board.at(clickedPiecePos), &__boardData.mouseInfo.clickedPieceRectangle);
     }
 
     return;

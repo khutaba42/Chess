@@ -67,9 +67,10 @@ void Board::swapPieces(const Vec2<int> a, const Vec2<int> b)
     return;
 }
 
-std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) const
+Board::AttackedSquares Board::getPieceAttackingSquares(const Vec2<int> Square) const
 {
-    std::vector<Vec2<int>> attackedSquares;
+    AttackedSquares squares;
+
     if (this->inBoard(Square) && this->squareOccupied(Square))
     {
         Piece piece = this->at(Square);
@@ -93,12 +94,26 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         const Vec2<int> Square_1 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col};
                         if (this->inBoard(Square_1))
                         {
-                            attackedSquares.push_back(Square_1);
+                            if (this->squareOccupied(Square_1))
+                            {
+                                squares.occupied.push_back(Square_1);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(Square_1);
+                            }
                         }
                         const Vec2<int> Square_2 = {Square.row + ((color == PieceColor::White) ? (-2) : (2)), Square.col};
-                        if (this->inBoard(Square_2) && !this->squareOccupied(Square_2))
+                        if (this->inBoard(Square_2))
                         {
-                            attackedSquares.push_back(Square_2);
+                            if (this->squareOccupied(Square_2))
+                            {
+                                squares.occupied.push_back(Square_2);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(Square_2);
+                            }
                         }
                     }
                     else
@@ -106,7 +121,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         const Vec2<int> Square_1 = {Square.row + ((color == PieceColor::White) ? (-1) : (1)), Square.col};
                         if (this->inBoard(Square_1))
                         {
-                            attackedSquares.push_back(Square_1);
+                            if (this->squareOccupied(Square_1))
+                            {
+                                squares.occupied.push_back(Square_1);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(Square_1);
+                            }
                         }
                     }
                 }
@@ -122,11 +144,25 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                 // pawn cant eat pieces of the same color, enPassant availability
                 if (this->inBoard(diagonalSquare_1) && (((this->at(diagonalSquare_1).color() != color) && (this->at(diagonalSquare_1).color() != PieceColor::None)) || (canEnPassant && (EnPassantTarget == diagonalSquare_1))))
                 {
-                    attackedSquares.push_back(diagonalSquare_1);
+                    if (this->squareOccupied(diagonalSquare_1))
+                    {
+                        squares.occupied.push_back(diagonalSquare_1);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(diagonalSquare_1);
+                    }
                 }
                 if (this->inBoard(diagonalSquare_2) && (((this->at(diagonalSquare_2).color() != color) && (this->at(diagonalSquare_2).color() != PieceColor::None)) || (canEnPassant && (EnPassantTarget == diagonalSquare_2))))
                 {
-                    attackedSquares.push_back(diagonalSquare_2);
+                    if (this->squareOccupied(diagonalSquare_2))
+                    {
+                        squares.occupied.push_back(diagonalSquare_2);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(diagonalSquare_2);
+                    }
                 }
             }
             else
@@ -143,7 +179,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                 {
                     if (this->at(potentialSquare).color() != color)
                     {
-                        attackedSquares.push_back(potentialSquare);
+                        if (this->squareOccupied(potentialSquare))
+                        {
+                            squares.occupied.push_back(potentialSquare);
+                        }
+                        else
+                        {
+                            squares.empty.push_back(potentialSquare);
+                        }
                     }
                 }
             }
@@ -155,7 +198,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                 Vec2<int> potentialSquare = Square + globals::board::KNIGHT_DIRECTIONS[Counter];
                 if (this->inBoard(potentialSquare) && (this->at(potentialSquare).color() != color))
                 {
-                    attackedSquares.push_back(potentialSquare);
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        squares.occupied.push_back(potentialSquare);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(potentialSquare);
+                    }
                 }
             }
             break;
@@ -170,7 +220,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                     {
                         if (this->at(potentialSquare).color() != color)
                         {
-                            attackedSquares.push_back(potentialSquare);
+                            if (this->squareOccupied(potentialSquare))
+                            {
+                                squares.occupied.push_back(potentialSquare);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(potentialSquare);
+                            }
                             if (this->at(potentialSquare).color() != PieceColor::None)
                             {
                                 break;
@@ -181,7 +238,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                             break;
                         }
                     }
-                    attackedSquares.push_back(potentialSquare);
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        squares.occupied.push_back(potentialSquare);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(potentialSquare);
+                    }
                     potentialSquare += globals::board::DIAGONAL_DIRECTIONS[direction];
                 }
             }
@@ -197,7 +261,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                     {
                         if (this->at(potentialSquare).color() != color)
                         {
-                            attackedSquares.push_back(potentialSquare);
+                            if (this->squareOccupied(potentialSquare))
+                            {
+                                squares.occupied.push_back(potentialSquare);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(potentialSquare);
+                            }
                             if (this->at(potentialSquare).color() != PieceColor::None)
                             {
                                 break;
@@ -208,7 +279,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                             break;
                         }
                     }
-                    attackedSquares.push_back(potentialSquare);
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        squares.occupied.push_back(potentialSquare);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(potentialSquare);
+                    }
                     potentialSquare += globals::board::STRAIGHT_DIRECTIONS[direction];
                 }
             }
@@ -224,7 +302,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                     {
                         if (this->at(potentialSquare).color() != color)
                         {
-                            attackedSquares.push_back(potentialSquare);
+                            if (this->squareOccupied(potentialSquare))
+                            {
+                                squares.occupied.push_back(potentialSquare);
+                            }
+                            else
+                            {
+                                squares.empty.push_back(potentialSquare);
+                            }
                             if (this->at(potentialSquare).color() != PieceColor::None)
                             {
                                 break;
@@ -235,7 +320,14 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
                             break;
                         }
                     }
-                    attackedSquares.push_back(potentialSquare);
+                    if (this->squareOccupied(potentialSquare))
+                    {
+                        squares.occupied.push_back(potentialSquare);
+                    }
+                    else
+                    {
+                        squares.empty.push_back(potentialSquare);
+                    }
                     potentialSquare += globals::board::ALL_DIRECTIONS[direction];
                 }
             }
@@ -244,7 +336,7 @@ std::vector<Vec2<int>> Board::getPieceAttackingSquares(const Vec2<int> Square) c
             break;
         }
     }
-    return attackedSquares;
+    return squares;
 }
 
 Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int> To)

@@ -21,7 +21,13 @@ public:
     const Piece &at(const Vec2<int> position) const;
 
     void swapPieces(const Vec2<int> a, const Vec2<int> b);
-    std::vector<Vec2<int>> getPieceAttackingSquares(const Vec2<int> Square) const;
+
+    struct AttackedSquares
+    {
+        std::vector<Vec2<int>> empty;
+        std::vector<Vec2<int>> occupied;
+    };
+    AttackedSquares getPieceAttackingSquares(const Vec2<int> Square) const;
 
     enum PieceMovementStatus
     {

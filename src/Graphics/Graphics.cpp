@@ -254,10 +254,14 @@ void Graphics::__drawBoard()
     {
         Vec2<int> clickedPiecePos = __boardData.mouseInfo.clickedPieceInitalPosition;
         // draw circles to specify squares that are attacked by the clicked piece
-        std::vector<Vec2<int>> attackedPositions = __board.getPieceAttackingSquares(clickedPiecePos);
-        for (Vec2<int> Position : attackedPositions)
+        Board::AttackedSquares attackedPositions = __board.getPieceAttackingSquares(clickedPiecePos);
+        for (Vec2<int> Position : attackedPositions.empty)
         {
             __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, true);
+        }
+        for (Vec2<int> Position : attackedPositions.occupied)
+        {
+            __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, false);
         }
         // must draw the clicked piece last so it wouldn't overlap with other objects being rendered
         __window.drawPiece(__board.at(clickedPiecePos), &__boardData.mouseInfo.clickedPieceRectangle);

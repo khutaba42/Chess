@@ -106,14 +106,11 @@ Board::AttackedSquares Board::getPieceAttackingSquares(const Vec2<int> Square) c
                         const Vec2<int> Square_2 = {Square.row + ((color == PieceColor::White) ? (-2) : (2)), Square.col};
                         if (this->inBoard(Square_2))
                         {
-                            if (this->squareOccupied(Square_2))
-                            {
-                                squares.occupied.push_back(Square_2);
-                            }
-                            else
+                            if (!this->squareOccupied(Square_2))
                             {
                                 squares.empty.push_back(Square_2);
                             }
+                            // else if it is occupied the pawn CAN'T move there
                         }
                     }
                     else

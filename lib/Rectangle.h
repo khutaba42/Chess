@@ -40,7 +40,7 @@ public:
     bool inRectangle(int x, int y) const;
 };
 
-#include <stdexcept>
+#include "Exceptions.h"
 #define CHECK_SDL_RECT_AND_RECTANGLE_DATA                                              \
     if (sizeof(SDL_Rect) != sizeof(Rectangle))                                         \
     {                                                                                  \

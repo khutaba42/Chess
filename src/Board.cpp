@@ -207,18 +207,19 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
                 {
                     return PieceMovementStatus::PawnCapturedThroughEnPassant;
                 }
-                else {
+                else
+                {
                     return PieceMovementStatus::MovedToAnEmptySquare;
                 }
             }
         }
-        else{
+        else
+        {
             if (__NO_SAFETY__isKingInCheck(PotentialBoard, CurrentActiveColor, true))
             {
-                // if king is still in check after the piece moved then the move doesn't resolve the check
                 return PieceMovementStatus::IllegalMove_ActiveColorKingGetsChecked;
             }
-            else // the move resolved the check
+            else
             {
                 bool isPieceAtFromAPawn = (this->at(From).type() == PieceEnum::Pawn);
                 this->__NO_SAFETY__movePiece(From, To);
@@ -230,7 +231,8 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
                 {
                     return PieceMovementStatus::PawnCapturedThroughEnPassant;
                 }
-                else {
+                else
+                {
                     return PieceMovementStatus::MovedToAnEmptySquare;
                 }
             }
@@ -250,6 +252,14 @@ bool Board::isKingInCheck(const Board &board, PieceColor KingColor) const
 }
 
 /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
+
+enum CastlingLetters
+{
+    WhiteKingSideCastling = 'K',
+    WhiteQueenSideCastling = 'Q',
+    BlackKingSideCastling = 'k',
+    BlackQueenSideCastling = 'q'
+};
 
 enum PieceLetters
 {
@@ -285,6 +295,7 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
     int partCounter = 0;
     Vec2<int> part1 = {0, 0};
 
+    std::string castling_str;
     std::string enPassant_str;
     std::string halfMoveClock_str;
     std::string fullMoveNumber_str;
@@ -393,7 +404,37 @@ Board::FEN_data Board::FEN_decoder(const std::string &FEN)
             }
             break;
         case 2:
-            data.Castling.push_back(letter);
+            // translating castling data
+            switch (letter)
+            {
+            case CastlingLetters::WhiteKingSideCastling:
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].valid = true;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].data = FEN_data::CastlingDirection::KingSide;
+                break;
+            case CastlingLetters::WhiteQueenSideCastling:
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].valid = true;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].data = FEN_data::CastlingDirection::QueenSide;
+                break;
+            case CastlingLetters::BlackKingSideCastling:
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].valid = true;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].data = FEN_data::CastlingDirection::KingSide;
+                break;
+            case CastlingLetters::BlackQueenSideCastling:
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].valid = true;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].data = FEN_data::CastlingDirection::QueenSide;
+                break;
+            case '-':
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].valid = false;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::White)].valid = false;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].valid = false;
+                data.CastlingAvailability[static_cast<size_t>(PieceColor::Black)].valid = false;
+                break;
+
+            default:
+                throw std::runtime_error("Unknown format of FEN in part 3 Castling\n");
+
+                break;
+            }
             break;
         case 3:
             enPassant_str.push_back(letter);
@@ -732,7 +773,7 @@ bool __NO_SAFETY__isKingInCheck(const Board &board, PieceColor KingColor, bool C
             {
                 break; // from the while loop and continue to the next direction in the for loop to check
             }
-            else if (potentialSquareColor != PieceColor::None) // there is a piece
+            else if (potentialSquareColor == PieceColor::None) // there is no piece
             {
                 potentialSquare += dir;
             }
@@ -764,7 +805,7 @@ bool __NO_SAFETY__isKingInCheck(const Board &board, PieceColor KingColor, bool C
             {
                 break; // from the while loop and continue to the next direction in the for loop to check
             }
-            else if (potentialSquareColor != PieceColor::None) // no piece
+            else if (potentialSquareColor == PieceColor::None) // there is no piece
             {
                 potentialSquare += dir;
             }
@@ -928,19 +969,80 @@ PieceColor Board::__nextColorToPlay() const
 
 void Board::__NO_SAFETY__movePiece(const Vec2<int> From, const Vec2<int> To)
 {
+    // update the necessary data if needed
+    const Piece piece = this->at(From);
+    PieceEnum piece_type = piece.type();
+    PieceColor piece_color = piece.color();
+
+    switch (piece_type)
+    {
+    case PieceEnum::King:
+        // update the king square
+        __data.KingSquare[static_cast<size_t>(piece_color)].data = To;
+        break;
+    case PieceEnum::Pawn:
+        // check if en passant is going to be available next move
+        if (!piece.hasMoved() && (__NO_SAFETY__getPawnMarchingSquares(From).second == To))
+        {
+            __data.EnPassantTarget.valid = true;
+            __data.EnPassantTarget.data = __NO_SAFETY__getPawnMarchingSquares(From).first;
+        }
+        else
+        {
+            // En passant is available for this turn
+            if (__data.EnPassantTarget.valid)
+            {
+                // TODO: make this code less shitty
+                if ((__NO_SAFETY__getPawnAttackedSquares(From).first == __data.EnPassantTarget.data) || (__NO_SAFETY__getPawnAttackedSquares(From).second == __data.EnPassantTarget.data))
+                {
+                    if (__data.EnPassantTarget.data == To)
+                    {
+
+                        // remove the En passant piece that was in From
+                        Vec2<int> square_coor;
+                        if (__NO_SAFETY__getPawnAttackedSquares(From).first == __data.EnPassantTarget.data)
+                        {
+                            // TODO: this depends on the implementation of __NO_SAFETY__getPawnAttackedSquares(), change this shitty dependence
+                            // first is +1 in cols and second is -1
+                            square_coor = From + Vec2<int>(0, +1);
+                        }
+                        else // __NO_SAFETY__getPawnAttackedSquares(From).second == __data.EnPassantTarget.data
+                        {
+                            // first is +1 in cols and second is -1
+                            square_coor = From + Vec2<int>(0, -1);
+                        }
+                        __data.PiecePlacement[square_coor.row][square_coor.col] = Piece();
+                        // remove the piece that was in From
+                        __data.PiecePlacement[From.row][From.col] = Piece();
+                        // the piece that was in From is now in To.
+                        __data.PiecePlacement[To.row][To.col] = __data.PiecePlacement[From.row][From.col];
+
+                        // note that the piece that is in To position has moved
+                        __data.PiecePlacement[To.row][To.col].move();
+                        // change colors to the next color to play
+                        __data.ActiveColor = __nextColorToPlay();
+                        __data.EnPassantTarget.valid = false;
+                        return;
+                    }
+                }
+            }
+            __data.EnPassantTarget.valid = false;
+        }
+
+        break;
+    default:
+        break;
+    }
+
     // the piece that was in From is now in To.
     __data.PiecePlacement[To.row][To.col] = __data.PiecePlacement[From.row][From.col];
     // remove the piece that was in From
     __data.PiecePlacement[From.row][From.col] = Piece();
+
     // note that the piece that is in To position has moved
     __data.PiecePlacement[To.row][To.col].move();
     // change colors to the next color to play
     __data.ActiveColor = __nextColorToPlay();
-    // // update the king square
-    // if (this->at(To).type() == PieceEnum::King)
-    // {
-    //     __data.KingSquare[static_cast<size_t>(this->at(To).color())].data = To;
-    // }
 }
 
 /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/

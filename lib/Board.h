@@ -70,7 +70,7 @@ public:
         IllegalMove_CastlingKingKingRookMoved,
         // return when trying to castle the king with the queen-side rook that has moved, board is unchanged.
         IllegalMove_CastlingKingQueenRookMoved,
-        
+
         // ! these return a board changed
 
         // return when a pawn has been captured through en passant, this has a higher priority than `MovedToAnEmptySquare`, board is changed.
@@ -97,7 +97,7 @@ private:
     struct FEN_data
     {
         Piece EmptyPiece;
-        
+
         /* *
          *         the {0, 0} position represents a8
          *     and the {8, 8} position represents h1
@@ -110,7 +110,13 @@ private:
 
         // -*- FEN data -*- //
         PieceColor ActiveColor;
-        std::string Castling;
+        // ? Castling Availability
+        enum class CastlingDirection : bool
+        {
+            KingSide,
+            QueenSide
+        };
+        std::array<Validity<CastlingDirection>, static_cast<size_t>(PieceColor::None)> CastlingAvailability;
         //? This is a square over which a pawn has just passed while moving two squares; it is given in algebraic notation. for example if e2 white pawn moved two squares to e4 then this variable will hold e3.
         Validity<Vec2<int>> EnPassantTarget;
         //? The number of half-moves since the last capture or pawn advance, used for the fifty-move rule.
@@ -135,7 +141,7 @@ private:
     friend bool __NO_SAFETY__isKingInCheck(const Board &board, PieceColor KingColor, bool CheckForKingChecks);
     // returns the 2 diagonal squares a pawn can attack (beware to check for everything outside the function and the returns might not be inside the board bounds)
     std::pair<Vec2<int>, Vec2<int>> __NO_SAFETY__getPawnAttackedSquares(const Vec2<int> Pos) const;
-    // returns the 2 diagonal squares a pawn can attack (beware to check for everything outside the function and the returns might not be inside the board bounds)
+    // returns the 2 ahead squares a pawn can attack (beware to check for everything outside the function and the returns might not be inside the board bounds)
     std::pair<Vec2<int>, Vec2<int>> __NO_SAFETY__getPawnMarchingSquares(const Vec2<int> Pos) const;
 
     PieceColor __previousColorToPlay() const;

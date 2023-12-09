@@ -20,28 +20,34 @@ private:
     Window __window;
 
     Board __board;
+    // this struct holds in all the info needed to render the board on the window
     struct GraphicalBoard
     {
+        // if false the white pieces will be on the bottom of the board 
+        bool BoardIsFlipped = false; 
+
+        // the board's main dimensions
         Rectangle boardFrame;
         int squareSideLength;
         Rectangle boardBorders;
+
+        // this struct will hold in all the info needed for each square
         struct SquareData
         {
-            Rectangle coordinates;
-            Vec2<int> position;
-            bool attacked;
+            Vec2<int> position; // the position in the board it represents (this solves the issue when flipping the board)
+            Rectangle coordinates; // the actual coordinates of the rectangle (square) on the window
 
             SquareData() {}
-            SquareData(Rectangle coords, Vec2<int> pos) : coordinates(coords), position(pos), attacked(false) {}
+            SquareData(Rectangle coords, Vec2<int> pos) : coordinates(coords), position(pos) {}
         };
-        std::vector<SquareData> squareData;
+        std::vector<SquareData> squareData; // the grid of square data
+
+        // this struct hold in the info for mouse input on the squares
         struct MouseInfo
         {
-            bool hovering;
-            Vec2<int> hoveredOnPosition;
-            bool clicked;
-            Vec2<int> clickedPieceInitalPosition;
-            Rectangle clickedPieceRectangle;
+            Validity<Vec2<int>> hoveredOnPosition;
+            Validity<Vec2<int>> clickedPieceInitalPosition;
+            Rectangle clickedPieceRectangle; // for drawing the piece held over the board
         };
         MouseInfo mouseInfo;
     };
@@ -63,8 +69,10 @@ private:
 
     // Helper Functions for Board Graphics
     void __updateGraphicalBoardData();
-    void __drawBoard();
+    void __drawBoard(bool flipped = false);
+    void __flipBoard();
 
+    bool __squareIsHoveredOn(Vec2<int> Position);
     bool __pieceIsClicked(Vec2<int> Position);
 
     void __handleMousePosition(int x, int y);

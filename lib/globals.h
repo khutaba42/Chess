@@ -79,6 +79,23 @@ namespace globals
 
         };
 
+        // ? - the order here matters, the square to the right and left of the king are bundled together so to make the loops easier
+        const std::array<Vec2<int>, 10> KING_DIRECTIONS_WITH_CASTLING_AT_1_AND_3 = {
+            Vec2<int>(0, 1),
+            Vec2<int>(0, 2), // King-side castling (fro BOTH colors)
+
+            Vec2<int>(0, -1),
+            Vec2<int>(0, -2), // Queen-side castling (fro BOTH colors)
+
+            Vec2<int>(1, 0),
+            Vec2<int>(-1, 0),
+            Vec2<int>(1, 1),
+            Vec2<int>(1, -1),
+            Vec2<int>(-1, 1),
+            Vec2<int>(-1, -1)
+
+        };
+
         const std::array<Vec2<int>, 8> KNIGHT_DIRECTIONS = {
             Vec2<int>(+2, +1),
             Vec2<int>(+2, -1),
@@ -95,22 +112,25 @@ namespace globals
     namespace font
     {
         const int DEFAULT_FONT_SIZE = 12;
-        
-        namespace path {
+
+        namespace path
+        {
             const std::string ROBOTO = "font/Roboto/";
         };
 
-        namespace name {
+        namespace name
+        {
             const std::string ROBOTO = "Roboto";
 
         };
 
-        namespace type {
+        namespace type
+        {
             const std::string REGULAR = "-Regular.ttf";
             const std::string BOLD = "-Bold.ttf";
         };
     };
-    
+
     namespace window
     {
         const int WIDTH = 641;

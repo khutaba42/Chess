@@ -1,13 +1,13 @@
 #!/bin/sh
 
-NAME=ChessGame
+NAME=outDebug
 COMPILER=g++
 COMPILER_VERSION=-std=c++11
 DEBUG=-g
 # ------------------------------------------------------------ #
 # ------------------------ Variables ------------------------- #
 # ------------------------------------------------------------ #
-WORKING_DIR= # the path of the project
+WORKING_DIR=./ # the path of the project
 
 SRC=$WORKING_DIR/src
 LIB=$WORKING_DIR/lib

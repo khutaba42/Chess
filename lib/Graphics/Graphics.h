@@ -72,6 +72,11 @@ private:
     void __drawBoard(bool flipped = false);
     void __flipBoard();
 
+    // Mouse Helper methods
+    Validity<Vec2<int>> __getHoveredOnPosition() const;
+    Validity<Vec2<int>> __getClickedOnPosition() const;
+    Rectangle __getHeldPieceRectangle() const;
+
     bool __squareIsHoveredOn(Vec2<int> Position);
     bool __pieceIsClicked(Vec2<int> Position);
 

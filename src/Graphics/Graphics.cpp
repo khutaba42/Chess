@@ -203,37 +203,42 @@ void Graphics::__drawBoard(bool flipped)
 
     GraphicalBoard &boardData = __getGraphicalBoardData();
 
+    // draw base color "light square" first
+    __window.drawRectangle(boardData.boardBorders, globals::color::lightWhite);
+
     for (int row = 0; row < Rows; row++)
     {
         for (int col = 0; col < Cols; col++)
         {
             GraphicalBoard::SquareData &info = __getSquareDataAt(row, col);
 
-            // draw "white" square
-            if ((row + col) % 2 == 0)
+            // draw "dark squares" on top
+            if ((row + col) % 2 == 1)
             {
-                if (__squareIsHoveredOn(info.position))
-                {
-                    __window.drawRectangle(info.coordinates, globals::color::lightWhiteClicked);
-                }
-                else
-                {
-                    __window.drawRectangle(info.coordinates, globals::color::lightWhite);
-                }
+                __window.drawRectangle(info.coordinates, globals::color::darkGreen);
             }
-            // draw "black" square
-            else // (row + col) % 2 == 1
-            {
-                if (__squareIsHoveredOn(info.position))
-                {
-                    __window.drawRectangle(info.coordinates, globals::color::darkGreenClicked);
-                }
-                else
-                {
-                    __window.drawRectangle(info.coordinates, globals::color::darkGreen);
-                }
-            }
+        }
+    }
 
+    Validity<Vec2<int>> pos = __getHoveredOnPosition();
+    if (pos.valid)
+    {
+        GraphicalBoard::SquareData &info = __getSquareDataAt(pos.data);
+        if ((pos.data.row + pos.data.col) % 2 == 0)
+        {
+            __window.drawRectangle(info.coordinates, globals::color::lightWhiteClicked);
+        }
+        else // if ((row + col) % 2 == 1)
+        {
+            __window.drawRectangle(info.coordinates, globals::color::darkGreenClicked);
+        }
+    }
+
+    for (int row = 0; row < Rows; row++)
+    {
+        for (int col = 0; col < Cols; col++)
+        {
+            GraphicalBoard::SquareData &info = __getSquareDataAt(row, col);
             // Draw pieces
             if (__board.squareOccupied(info.position))
             {
@@ -248,6 +253,7 @@ void Graphics::__drawBoard(bool flipped)
             }
         }
     }
+
     // draw the clicked piece
     if (__boardData.mouseInfo.clickedPieceInitalPosition.valid)
     {
@@ -295,6 +301,21 @@ void Graphics::__flipBoard()
 }
 
 /// ---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*--- ///
+
+Validity<Vec2<int>> Graphics::__getHoveredOnPosition() const
+{
+    return __boardData.mouseInfo.hoveredOnPosition;
+}
+
+Validity<Vec2<int>> Graphics::__getClickedOnPosition() const
+{
+    return __boardData.mouseInfo.clickedPieceInitalPosition;
+}
+
+Rectangle Graphics::__getHeldPieceRectangle() const
+{
+    return __boardData.mouseInfo.clickedPieceRectangle;
+}
 
 bool Graphics::__squareIsHoveredOn(Vec2<int> Position)
 {
@@ -367,7 +388,7 @@ void Graphics::__clickOnPiece(int x, int y)
     const int square_col = (x - board_borders.x) / side_length;
     const int square_row = (y - board_borders.y) / side_length;
 
-    if (!__boardData.mouseInfo.clickedPieceInitalPosition.valid && board_borders.inRectangle(x, y) )
+    if (!__boardData.mouseInfo.clickedPieceInitalPosition.valid && board_borders.inRectangle(x, y))
     {
         __boardData.mouseInfo.clickedPieceInitalPosition.valid = true;
         __boardData.mouseInfo.clickedPieceInitalPosition.data = {square_row, square_col};

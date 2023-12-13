@@ -79,20 +79,25 @@ namespace globals
 
         };
 
-        // ? - the order here matters, the square to the right and left of the king are bundled together so to make the loops easier
-        const std::array<Vec2<int>, 10> KING_DIRECTIONS_WITH_CASTLING_AT_1_AND_3 = {
-            Vec2<int>(0, 1),
-            Vec2<int>(0, 2), // King-side castling (fro BOTH colors)
-
-            Vec2<int>(0, -1),
-            Vec2<int>(0, -2), // Queen-side castling (fro BOTH colors)
-
+        const std::array<Vec2<int>, 10> KING_DIRECTIONS_WITHOUT_CASTLING_DIRECTIONS = {
             Vec2<int>(1, 0),
             Vec2<int>(-1, 0),
             Vec2<int>(1, 1),
             Vec2<int>(1, -1),
             Vec2<int>(-1, 1),
             Vec2<int>(-1, -1)
+
+        };
+
+        const std::array<Vec2<int>, 10> KING_DIRECTIONS_KING_SIDE_CASTLING_DIRECTIONS = {
+            Vec2<int>(0, 1),
+            Vec2<int>(0, 2), // King-side castling (fro BOTH colors)
+
+        };
+
+        const std::array<Vec2<int>, 10> KING_DIRECTIONS_QUEEN_SIDE_CASTLING_DIRECTIONS = {
+            Vec2<int>(0, -1),
+            Vec2<int>(0, -2), // Queen-side castling (fro BOTH colors)
 
         };
 

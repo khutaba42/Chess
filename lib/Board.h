@@ -6,6 +6,8 @@
 #include "Piece.h"
 #include "Validity.h"
 
+#include "CastlingData.h"
+
 class Board
 {
 public:
@@ -28,7 +30,7 @@ public:
         std::vector<Vec2<int>> empty;
         std::vector<Vec2<int>> occupied;
     };
-    Board::AttackedSquares getAllSquaresPieceCanGoTo(const Vec2<int> Square) const;
+    AttackedSquares getAllSquaresPieceCanGoTo(const Vec2<int> Square) const;
 
     /**
      * ! DO NOT mix up these enums ;
@@ -65,11 +67,7 @@ public:
         // return when moving an active color king in castling through a checked square (returned for the checked squares in-between AND/OR the destination square), board is unchanged.
         IllegalMove_CastlingKingMovesThroughCheck,
         // return when the active color king has moved and is trying to be castled, this has a higher priority than `IllegalMove_CastlingKingKingRookMoved` or `IllegalMove_CastlingKingQueenRookMoved`, board is unchanged.
-        IllegalMove_CastlingKingThatMoved,
-        // return when trying to castle the king with the king-side rook that has moved, board is unchanged.
-        IllegalMove_CastlingKingKingRookMoved,
-        // return when trying to castle the king with the queen-side rook that has moved, board is unchanged.
-        IllegalMove_CastlingKingQueenRookMoved,
+        IllegalMove_CastlingKingCantBeDone,
 
         // ! these return a board changed
 
@@ -91,7 +89,7 @@ public:
     };
     PieceMovementStatus movePiece(const Vec2<int> From, const Vec2<int> To);
     bool boardHasChangedByStatus(const PieceMovementStatus status);
-    bool isKingInCheck(const Board &board, PieceColor KingColor) const;
+    bool isKingInCheck(PieceColor KingColor) const;
 
 private:
     struct FEN_data
@@ -110,17 +108,16 @@ private:
 
         // -*- FEN data -*- //
         PieceColor ActiveColor;
+
         // ? Castling Availability
-        enum class CastlingDirection : bool
-        {
-            KingSide,
-            QueenSide
-        };
-        std::array<Validity<CastlingDirection>, static_cast<size_t>(PieceColor::None)> CastlingAvailability;
+        std::array<CastlingData, static_cast<size_t>(PieceColor::None)> CastlingAvailability;
+
         //? This is a square over which a pawn has just passed while moving two squares; it is given in algebraic notation. for example if e2 white pawn moved two squares to e4 then this variable will hold e3.
         Validity<Vec2<int>> EnPassantTarget;
+
         //? The number of half-moves since the last capture or pawn advance, used for the fifty-move rule.
         int HalfMoveClock;
+
         //? It starts at 1 and is incremented after Black's move.
         int FullMoveNumber;
         // -*- FEN data -*- //
@@ -133,20 +130,63 @@ private:
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
-    Validity<Vec2<int>> __getEnPassantTarget() const;
-    Board::AttackedSquares __getAllSquaresPieceCanGoTo(const Vec2<int> From) const;
+    // ? king checks
+    bool __isKingInCheck(PieceColor KingColor, bool CheckForKingChecks) const;
 
-    bool __NO_SAFETY__doesPieceMovementRulesAllowPieceToMove(const Vec2<int> From, const Vec2<int> To);
-    // doesn't check if `KingColor` is not `None` and assumes board has a valid king square.
-    friend bool __NO_SAFETY__isKingInCheck(const Board &board, PieceColor KingColor, bool CheckForKingChecks);
+    // ? piece available moves
+    AttackedSquares __getAllSquaresPieceCanGoTo(const Vec2<int> From) const;
+    AttackedSquares __getAllSquaresKingCanGoTo(PieceColor Color) const;
     // returns the 2 diagonal squares a pawn can attack (beware to check for everything outside the function and the returns might not be inside the board bounds)
     std::pair<Vec2<int>, Vec2<int>> __NO_SAFETY__getPawnAttackedSquares(const Vec2<int> Pos) const;
+    std::pair<Vec2<int>, Vec2<int>> __NO_SAFETY__getPawnAttackedSquares(const Vec2<int> Pos, const PieceColor Color) const;
     // returns the 2 ahead squares a pawn can attack (beware to check for everything outside the function and the returns might not be inside the board bounds)
     std::pair<Vec2<int>, Vec2<int>> __NO_SAFETY__getPawnMarchingSquares(const Vec2<int> Pos) const;
 
+    // ? piece movement
+    bool __NO_SAFETY__doesPieceMovementRulesAllowPieceToMove(const Vec2<int> From, const Vec2<int> To);
+    // doesn't check if `KingColor` is not `None` and assumes board has a valid king square.
+    friend bool __NO_SAFETY__isKingInCheck(const Board &board, PieceColor KingColor, bool CheckForKingChecks);
+
+    // ? castling
+    Vec2<int> __get_king_initial_square(PieceColor Color) const;
+
+    Vec2<int> __get_kingSide_rook_square(PieceColor Color) const;
+    Vec2<int> __get_queenSide_rook_square(PieceColor Color) const;
+
+    Vec2<int> __get_kingSide_rook_castling_square(PieceColor Color) const;
+    Vec2<int> __get_queenSide_rook_castling_square(PieceColor Color) const;
+
+    Vec2<int> __get_kingSide_king_castling_square(PieceColor Color) const;
+    Vec2<int> __get_queenSide_king_castling_square(PieceColor Color) const;
+
+    bool __isKingSideCastlingSquare(Vec2<int> Square, PieceColor Color) const;
+    bool __isQueenSideCastlingSquare(Vec2<int> Square, PieceColor Color) const;
+
+    bool __NO_SAFETY__canKingCastleKingSide(PieceColor Color) const;
+    bool __NO_SAFETY__canKingCastleQueenSide(PieceColor Color) const;
+
+    // ? en passant
+    Validity<Vec2<int>> __getEnPassantTarget() const;
+
+    enum class MoveType
+    {
+        CastlingKingSide,
+        CastlingQueenSide,
+        EnPassant,
+        Capture,
+        None // returned when none of the above gets satisfied
+    };
+    MoveType __move_type(const Vec2<int> From, const Vec2<int> To) const; // * no need to return a color because the move is for the active color
+
+    // ? moving pieces
+    void __NO_SAFETY__movePiece(const Vec2<int> From, const Vec2<int> To, bool ChangeActiveColor = true);
+    void __NO_SAFETY__castleKingSide(PieceColor Color);
+    void __NO_SAFETY__castleQueenSide(PieceColor Color);
+    void __NO_SAFETY__enPassant(const Vec2<int> From);
+
+    //
     PieceColor __previousColorToPlay() const;
     PieceColor __nextColorToPlay() const;
-    void __NO_SAFETY__movePiece(const Vec2<int> From, const Vec2<int> To);
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 };

@@ -69,7 +69,7 @@ private:
 
     // Helper Functions for Board Graphics
     void __updateGraphicalBoardData();
-    void __drawBoard(bool flipped = false);
+    void __drawBoard(bool flipped);
     void __flipBoard();
 
     // Mouse Helper methods

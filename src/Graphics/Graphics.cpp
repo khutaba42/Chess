@@ -93,12 +93,14 @@ Graphics::GraphicalBoard &Graphics::__getGraphicalBoardData()
 
 Graphics::GraphicalBoard::SquareData &Graphics::__getSquareDataAt(Vec2<int> Pos)
 {
-    return __boardData.squareData[Pos.row * __board.getCols() + Pos.col];
+    return __getSquareDataAt(Pos.row, Pos.col);
 }
 
 Graphics::GraphicalBoard::SquareData &Graphics::__getSquareDataAt(int row, int col)
 {
-    return __boardData.squareData[row * __board.getCols() + col];
+    int Cols = __board.getCols();
+    int hashed_coor = row * Cols + col;
+    return __boardData.squareData[hashed_coor];
 }
 
 int Graphics::__getWindowWidth() const
@@ -166,6 +168,7 @@ void Graphics::__updateGraphicalBoardData()
         boardBoardersHeight
 
     };
+    
     /**
      * ! this following line is Important
      * it prevents a bug where the vector `squareData` keeps growing
@@ -258,18 +261,23 @@ void Graphics::__drawBoard(bool flipped)
     if (__boardData.mouseInfo.clickedPieceInitalPosition.valid)
     {
         Vec2<int> clickedPiecePos = __boardData.mouseInfo.clickedPieceInitalPosition.data;
-        // draw circles to specify squares that are attacked by the clicked piece
-        Board::AttackedSquares attackedPositions = __board.getAllSquaresPieceCanGoTo(clickedPiecePos);
-        for (Vec2<int> Position : attackedPositions.empty)
+        const Piece piece = __board.at(clickedPiecePos);
+        // draw circles to specify squares that are attacked by the clicked piece IF the piece is of active color
+        if (piece.color() == __board.getActiveColor())
         {
-            __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, true);
+            Board::AttackedSquares attackedPositions = __board.getAllSquaresPieceCanGoTo(clickedPiecePos);
+            for (Vec2<int> Position : attackedPositions.empty)
+            {
+                __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, true);
+            }
+            for (Vec2<int> Position : attackedPositions.occupied)
+            {
+                __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, false);
+            }
         }
-        for (Vec2<int> Position : attackedPositions.occupied)
-        {
-            __window.drawAttackedSquareCircle(&__getSquareDataAt(Position).coordinates, false);
-        }
-        // must draw the clicked piece last so it wouldn't overlap with other objects being rendered
-        __window.drawPiece(__board.at(clickedPiecePos), &__boardData.mouseInfo.clickedPieceRectangle);
+
+        // ! must draw the clicked piece last so it wouldn't overlap with other objects being rendered
+        __window.drawPiece(piece, &__boardData.mouseInfo.clickedPieceRectangle);
     }
 
     return;
@@ -279,25 +287,25 @@ void Graphics::__drawBoard(bool flipped)
 void Graphics::__flipBoard()
 {
     (__boardData.BoardIsFlipped) ? (__boardData.BoardIsFlipped = false) : (__boardData.BoardIsFlipped = true); // indicate that the board is flipped
-    bool flipped = __boardData.BoardIsFlipped;
+    // bool flipped = __boardData.BoardIsFlipped;
 
-    // flip the positions in the square data
-    int Rows = __board.getRows();
-    int Cols = __board.getCols();
-    for (int row = 0; row < Rows; row++)
-    {
-        for (int col = 0; col < Cols; col++)
-        {
-            if (flipped)
-            {
-                __boardData.squareData[row * Cols + col].position = {Rows - 1 - row, Cols - 1 - col};
-            }
-            else
-            {
-                __boardData.squareData[row * Cols + col].position = {row, col};
-            }
-        }
-    }
+    // // flip the positions in the square data
+    // int Rows = __board.getRows();
+    // int Cols = __board.getCols();
+    // for (int row = 0; row < Rows; row++)
+    // {
+    //     for (int col = 0; col < Cols; col++)
+    //     {
+    //         if (flipped)
+    //         {
+    //             __boardData.squareData[row * Cols + col].position = {Rows - 1 - row, Cols - 1 - col};
+    //         }
+    //         else
+    //         {
+    //             __boardData.squareData[row * Cols + col].position = {row, col};
+    //         }
+    //     }
+    // }
 }
 
 /// ---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*--- ///

@@ -30,8 +30,7 @@ LIB_FILES="
 FRAMEWORK="
     -I/opt/homebrew/include \
     -L/opt/homebrew/lib \
-    -lSDL2 \
-    -framework OpenGL
+    -lSDL2
 "
 
 FLAGS="

@@ -56,18 +56,15 @@ public:
         ToHasActiveColorPiece,
         // return when the From piece can't move to the To square because of the piece movement rules, board is unchanged.
         IllegalMove_MoveRevokesPieceMovementRules,
-        // return when To is Not the EnPassant square when en passant is available, board is unchanged.
-        IllegalMove_EnPassantIsAvailableButToIsNotTheEnPassantSquare,
-        // return when En passant is NOT available, board is unchanged.
-        IllegalMove_EnPassantIsNotAvailable,
         // return when active color king is in check and moving this piece DOESN'T resolve that, board is unchanged.
         IllegalMove_ActiveColorKingIsInCheck,
-        // return when moving this piece results in a check for the active color (the color of the current turn), board is unchanged.
         IllegalMove_ActiveColorKingGetsChecked,
+        // return when moving this piece results in a check for the active color (the color of the current turn), board is unchanged.
+IllegalMove_CastlingKingSideCantBeDone,
         // return when moving an active color king in castling through a checked square (returned for the checked squares in-between AND/OR the destination square), board is unchanged.
-        IllegalMove_CastlingKingMovesThroughCheck,
+IllegalMove_CastlingQueenSideCantBeDone,
         // return when the active color king has moved and is trying to be castled, this has a higher priority than `IllegalMove_CastlingKingKingRookMoved` or `IllegalMove_CastlingKingQueenRookMoved`, board is unchanged.
-        IllegalMove_CastlingKingCantBeDone,
+IllegalMove_EnPassantCantBeDone,
 
         // ! these return a board changed
 

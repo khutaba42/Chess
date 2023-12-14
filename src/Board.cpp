@@ -152,17 +152,17 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
         return PieceMovementStatus::FromAndToSquareAreTheSameSquare;
     }
     // check if `From` has a piece in it (to move)
-    else if (!this->squareOccupied(From))
+    else if (!board.squareOccupied(From))
     {
         return PieceMovementStatus::FromSquareNotOccupied;
     }
     // check if the piece we are moving (from) is of the active color
-    else if (this->at(From).color() != __data.ActiveColor)
+    else if (board.at(From).color() != __data.ActiveColor)
     {
         return PieceMovementStatus::FromHasNonActiveColorPiece;
     }
     // check if the piece we are moving to is NOT of the active color
-    else if (this->at(To).color() == __data.ActiveColor)
+    else if (board.at(To).color() == __data.ActiveColor)
     {
         return PieceMovementStatus::ToHasActiveColorPiece;
     }
@@ -187,88 +187,155 @@ Board::PieceMovementStatus Board::movePiece(const Vec2<int> From, const Vec2<int
          *  4. Castling failure.
          */
 
-        Board PotentialBoard = *this;
         // check what type of move this is, castling, en passant or "normal" move
-        MoveType move_type = __move_type(From, To);
-        if (move_type == MoveType::CastlingKingSide)
+        MoveType move_type = board.__move_type(From, To);
+        // create a test board
+        Board PotentialBoard = *this;
+        const PieceColor current_active_color = PotentialBoard.getActiveColor();
+
+        // if king is currently under check, he must move or be protected by a piece
+        if (board.__isKingInCheck(board.getActiveColor(), false)) /* false here because we assume the board accepts a move (game NOT over) */
         {
-            if (PotentialBoard.__NO_SAFETY__canKingCastleKingSide(PotentialBoard.getActiveColor()))
+            if (move_type == MoveType::CastlingKingSide)
             {
-                board.__NO_SAFETY__castleKingSide(board.getActiveColor());
-                return PieceMovementStatus::KingSideCastling;
+                PotentialBoard.__NO_SAFETY__castleKingSide(current_active_color);
+            }
+            else if (move_type == MoveType::CastlingQueenSide)
+            {
+                PotentialBoard.__NO_SAFETY__castleQueenSide(current_active_color);
+            }
+            else if (move_type == MoveType::EnPassant)
+            {
+                PotentialBoard.__NO_SAFETY__enPassant(From);
             }
             else
             {
-                return PieceMovementStatus::IllegalMove_CastlingKingCantBeDone;
+                PotentialBoard.__NO_SAFETY__movePiece(From, To);
             }
-        }
-        else if (move_type == MoveType::CastlingQueenSide)
-        {
-            if (PotentialBoard.__NO_SAFETY__canKingCastleQueenSide(PotentialBoard.getActiveColor()))
+
+            if (PotentialBoard.__isKingInCheck(current_active_color, true))
             {
-                board.__NO_SAFETY__castleQueenSide(board.getActiveColor());
-                return PieceMovementStatus::KingSideCastling;
-            }
-            else
-            {
-                return PieceMovementStatus::IllegalMove_CastlingKingCantBeDone;
-            }
-        }
-        else if (move_type == MoveType::EnPassant)
-        {
-            board.__NO_SAFETY__enPassant(From);
-            return PieceMovementStatus::PawnCapturedThroughEnPassant;
-        }
-        else
-        {
-            // if king is currently under check, he must move or be protected by a piece
-            if (this->__isKingInCheck(this->getActiveColor(), false))
-            {
-                if (PotentialBoard.__isKingInCheck(PotentialBoard.getActiveColor(), true))
+                // if king is still in check after the piece moved then the move doesn't resolve the check
+                if (move_type == MoveType::CastlingKingSide)
                 {
-                    // if king is still in check after the piece moved then the move doesn't resolve the check
+                    return PieceMovementStatus::IllegalMove_CastlingKingSideCantBeDone;
+                }
+                else if (move_type == MoveType::CastlingQueenSide)
+                {
+                    return PieceMovementStatus::IllegalMove_CastlingQueenSideCantBeDone;
+                }
+                else if (move_type == MoveType::EnPassant)
+                {
+                    return PieceMovementStatus::IllegalMove_EnPassantCantBeDone;
+                }
+                else if (move_type == MoveType::Capture)
+                {
                     return PieceMovementStatus::IllegalMove_ActiveColorKingIsInCheck;
                 }
-                else // the move resolved the check
+                else
                 {
-                    bool isPieceAtFromAPawn = (board.at(From).type() == PieceEnum::Pawn);
-                    board.__NO_SAFETY__movePiece(From, To);
-                    if (board.squareOccupied(To))
-                    {
-                        return PieceMovementStatus::CapturedPiece;
-                    }
-                    else if (__getEnPassantTarget().valid && (__getEnPassantTarget().data == To) && isPieceAtFromAPawn)
-                    {
-                        return PieceMovementStatus::PawnCapturedThroughEnPassant;
-                    }
-                    else
-                    {
-                        return PieceMovementStatus::MovedToAnEmptySquare;
-                    }
+                    return PieceMovementStatus::IllegalMove_ActiveColorKingIsInCheck;
                 }
+            }
+            else // the move resolved the check
+            {
+                if (move_type == MoveType::CastlingKingSide)
+                {
+                    board.__NO_SAFETY__castleKingSide(board.getActiveColor());
+                    return PieceMovementStatus::KingSideCastling;
+                }
+                else if (move_type == MoveType::CastlingQueenSide)
+                {
+                    board.__NO_SAFETY__castleQueenSide(board.getActiveColor());
+                    return PieceMovementStatus::QueenSideCastling;
+                }
+                else if (move_type == MoveType::EnPassant)
+                {
+                    board.__NO_SAFETY__enPassant(From);
+                    return PieceMovementStatus::PawnCapturedThroughEnPassant;
+                }
+                else if (move_type == MoveType::Capture)
+                {
+                    board.__NO_SAFETY__movePiece(From, To);
+                    return PieceMovementStatus::CapturedPiece;
+                }
+                else
+                {
+                    board.__NO_SAFETY__movePiece(From, To);
+                    return PieceMovementStatus::MovedToAnEmptySquare;
+                }
+            }
+        }
+        // king is NOT checked
+        else
+        {
+            if (move_type == MoveType::CastlingKingSide)
+            {
+                PotentialBoard.__NO_SAFETY__castleKingSide(current_active_color);
+            }
+            else if (move_type == MoveType::CastlingQueenSide)
+            {
+                PotentialBoard.__NO_SAFETY__castleQueenSide(current_active_color);
+            }
+            else if (move_type == MoveType::EnPassant)
+            {
+                PotentialBoard.__NO_SAFETY__enPassant(From);
             }
             else
             {
-                if (PotentialBoard.__isKingInCheck(PotentialBoard.getActiveColor(), true))
+                PotentialBoard.__NO_SAFETY__movePiece(From, To);
+            }
+
+            if (PotentialBoard.__isKingInCheck(current_active_color, true))
+            {
+                // king gets checked
+                if (move_type == MoveType::CastlingKingSide)
+                {
+                    return PieceMovementStatus::IllegalMove_CastlingKingSideCantBeDone;
+                }
+                else if (move_type == MoveType::CastlingQueenSide)
+                {
+                    return PieceMovementStatus::IllegalMove_CastlingQueenSideCantBeDone;
+                }
+                else if (move_type == MoveType::EnPassant)
+                {
+                    return PieceMovementStatus::IllegalMove_EnPassantCantBeDone;
+                }
+                else if (move_type == MoveType::Capture)
                 {
                     return PieceMovementStatus::IllegalMove_ActiveColorKingGetsChecked;
                 }
                 else
                 {
-                    bool isPieceAtFromAPawn = (board.at(From).type() == PieceEnum::Pawn);
+                    return PieceMovementStatus::IllegalMove_ActiveColorKingGetsChecked;
+                }
+            }
+            else // there were no checks
+            {
+                if (move_type == MoveType::CastlingKingSide)
+                {
+                    board.__NO_SAFETY__castleKingSide(board.getActiveColor());
+                    return PieceMovementStatus::KingSideCastling;
+                }
+                else if (move_type == MoveType::CastlingQueenSide)
+                {
+                    board.__NO_SAFETY__castleQueenSide(board.getActiveColor());
+                    return PieceMovementStatus::QueenSideCastling;
+                }
+                else if (move_type == MoveType::EnPassant)
+                {
+                    board.__NO_SAFETY__enPassant(From);
+                    return PieceMovementStatus::PawnCapturedThroughEnPassant;
+                }
+                else if (move_type == MoveType::Capture)
+                {
                     board.__NO_SAFETY__movePiece(From, To);
-                    if (this->squareOccupied(To))
-                    {
-                        return PieceMovementStatus::CapturedPiece;
-                    }
-                    else if (__getEnPassantTarget().valid && (__getEnPassantTarget().data == To) && isPieceAtFromAPawn)
-                    {
-                        return PieceMovementStatus::PawnCapturedThroughEnPassant;
-                    }
-                    else
-                    {
-                        return PieceMovementStatus::MovedToAnEmptySquare;
-                    }
+                    return PieceMovementStatus::CapturedPiece;
+                }
+                else
+                {
+                    board.__NO_SAFETY__movePiece(From, To);
+                    return PieceMovementStatus::MovedToAnEmptySquare;
                 }
             }
         }
